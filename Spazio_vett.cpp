@@ -33,7 +33,7 @@ vec& vec::operator/=(float const& scalar) {
   return *this;
 }
 
-vec& vec::operator=(const vec& other) {
+vec& vec::operator=(vec const& other) {
   v.x = other.v.x;
   v.y = other.v.y; 
   return *this;
