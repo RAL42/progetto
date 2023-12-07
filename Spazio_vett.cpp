@@ -39,6 +39,14 @@ vec& vec::operator=(vec const& other) {
   return *this;
 }
 
+void vec::update_x(float const& z) {
+  v.x= z;
+}
+
+void vec::update_y(float const& z) {
+  v.y= z;
+}
+
 std::ostream& operator<<(std::ostream& os, vec const& v) {
   os << '(' << v.get_x() << ',' << v.get_y() << ')';
   return os;

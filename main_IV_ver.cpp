@@ -24,9 +24,9 @@ std::string to_string_with_precision(const float a_value, const int n = 9){// ht
 
 int main() {
   float const mass{10};
-  float const k{1000000.};
-  int const NoPM{100}; //Number Of PM nella catena
-  float const r{50}; //radius of the rest position of the chain
+  float const k{100000.};
+  int const NoPM{700}; //Number Of PM nella catena
+  float const r{100}; //radius of the rest position of the chain
   float const rest_length{2*pi*r/ NoPM}; //rest length is when the chain is a circumference
 
   Hooke spring{k, rest_length};
@@ -38,10 +38,10 @@ int main() {
 
   auto const delta_t{sf::milliseconds(1)};
   int const fps{60};
-  int const steps_per_evolution{100 / fps};
+  int const steps_per_evolution{1000 / fps};
 
-  unsigned const display_width = sf::VideoMode::getDesktopMode().width;
-  unsigned const display_height = sf::VideoMode::getDesktopMode().height;
+  unsigned const display_width = 0.9 * sf::VideoMode::getDesktopMode().width;
+  unsigned const display_height = 0.9 * sf::VideoMode::getDesktopMode().height;
   
 
     sf::Font font;
@@ -55,7 +55,7 @@ int main() {
 
   sf::RenderWindow window(sf::VideoMode(display_width, display_height), "Chain Evolution");
   window.setFramerateLimit(fps);  
-  window.setPosition(sf::Vector2i(0, 0));
+  window.setPosition(sf::Vector2i(50, 50));
 
   sf::Vector2f window_size(window.getSize());  // getsize prende width e height della window
   sf::View view{sf::Vector2f{0, 0}, window_size};  // view permette di cambiare l'origine, il primo vettore è l'origine, il secondo e la size della window
@@ -75,6 +75,8 @@ int main() {
     window.clear(sf::Color::Black);
     stringa.setString(to_string_with_precision(delta_t.asSeconds()));
     window.draw(stringa); 
+    
+    
     auto const state = evolve(chain, steps_per_evolution, delta_t);
 
   //std::cout<<"istante: " << delta_t.asSeconds() << '\n';

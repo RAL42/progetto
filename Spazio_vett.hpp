@@ -26,6 +26,9 @@ public:
   vec& operator*=(float const&);
   vec& operator/=(float const&);
   vec& operator=(vec const&);
+
+  void update_x(float const&);
+  void update_y(float const&);
 };
 
 std::ostream& operator<<(std::ostream&, vec const&);
