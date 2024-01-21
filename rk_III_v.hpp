@@ -60,31 +60,31 @@ std::vector<PM> rk4_II(Chain ch, float dt, float t_max, float W, float k, float 
     float cosTheta{};
 
     if (j == 0) {  // poichè un vector ha un inizio e una fine, non è una corda
-      x = ch[1].get_x() - ch.back().get_x();
-      y = ch[1].get_y() - ch.back().get_y();
+      x = temp_ch[1].get_x() - temp_ch.back().get_x();
+      y = temp_ch[1].get_y() - temp_ch.back().get_y();
 
-      auto Dx{abs(ch[1].get_x() - ch[0].get_x())};  // Delta x del primo e secondo elemento della catena
-      auto Dy{abs(ch[1].get_y() - ch[0].get_y())};  // Delta y
+      auto Dx{abs(temp_ch[1].get_x() - temp_ch[0].get_x())};  // Delta x del primo e secondo elemento della catena
+      auto Dy{abs(temp_ch[1].get_y() - temp_ch[0].get_y())};  // Delta y
       cosTheta = Dx / sqrt(Dx * Dx + Dy * Dy);
 
       // std::cout<< " interm0 j = " << j << " ; i = " << i << '\n';
 
-    } else if (j == ch.size() - 1) {x = (*(ch.end() - 2)).get_x() - ch[0].get_x();
-      y = (*(ch.end() - 2)).get_y() - ch[0].get_y();
+    } else if (j == ch.size() - 1) {x = (*(temp_ch.end() - 2)).get_x() - temp_ch[0].get_x();
+      y = (*(temp_ch.end() - 2)).get_y() - temp_ch[0].get_y();
       // std::cout<< " interm0.01 j = " << j << " ; i = " << i << '\n';
 
-      auto Dx{abs((*(ch.end() - 1)).get_x() -(*(ch.end() - 2)).get_x())};  // Delta x dell'ultimo e penultimo elemento della catena
-      auto Dy{abs((ch[1].get_y() - ch[0].get_y()))};  // Delta y
+      auto Dx{abs((*(temp_ch.end() - 1)).get_x() -(*(temp_ch.end() - 2)).get_x())};  // Delta x dell'ultimo e penultimo elemento della catena
+      auto Dy{abs((temp_ch[1].get_y() - temp_ch[0].get_y()))};  // Delta y
       cosTheta = Dx / sqrt(Dx * Dx + Dy * Dy);
 
       // std::cout<< " interm0.1 j = " << j << " ; i = " << i << '\n';
 
     } else {
-      x = ch[j + 1].get_x() - ch[j - 1].get_x();
-      y = ch[j + 1].get_y() - ch[j - 1].get_y();
+      x = temp_ch[j + 1].get_x() - temp_ch[j - 1].get_x();
+      y = temp_ch[j + 1].get_y() - temp_ch[j - 1].get_y();
 
-      auto Dx{abs(ch[j].get_x() - ch[j + 1].get_x())};
-      auto Dy{abs(ch[j].get_y() - ch[j + 1].get_y())};
+      auto Dx{abs(temp_ch[j].get_x() - temp_ch[j + 1].get_x())};
+      auto Dy{abs(temp_ch[j].get_y() - temp_ch[j + 1].get_y())};
       cosTheta = Dx / sqrt(Dx * Dx + Dy * Dy);
 
       // std::cout<< " interm0.2 j = " << j << " ; i = " << i << '\n';
@@ -122,8 +122,11 @@ std::vector<PM> rk4_II(Chain ch, float dt, float t_max, float W, float k, float 
     y_ = y + (k1_y + 2 * k2_y + 2 * k3_y + k4_y) / 6;  // ho calcolato la nuova posizione
 
   PM temp_pm(x_, y_, m);
-  temp_ch.push_back(temp_pm);
+  ch[j] = temp_pm;
   //temp_ch[j]=temp_pm;
+  
+  std::cout << "x_ = " << x_ << "; y_ = " << y_ << '\n'; 
+  //std::cout << "ch[j].x = " << ch[j].get_x() << "; ch[j].y = " << ch[j].get_y() << '\n'; 
 
     
   /*std::cout<< "size of temp ch = " << temp_ch.size() << '\n';
@@ -134,5 +137,5 @@ std::vector<PM> rk4_II(Chain ch, float dt, float t_max, float W, float k, float 
     std::cout << " fine j = " << j << " ; i = " << i << '\n';
     */
 };
-  return temp_ch;
+  return ch.state();
 }

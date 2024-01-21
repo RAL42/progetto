@@ -5,6 +5,7 @@
 #include <cmath>
 #include <iostream>
 #include <vector>
+#include <cassert>
 //#include <SFML/Graphics/Shape.hpp>
 
 #include "Spazio_vett.hpp"
@@ -20,7 +21,6 @@ pusho dentro dopo
 
 const float pi = M_PI;  // usa l'alias
 float w{};              // velocità angolare
-
 
 /*struct arrow{
   sf::Shape polygon;
@@ -47,7 +47,11 @@ class PM {  // Punto Materiale
     s.setFillColor(sf::Color::White);
   }
 
-  PM(vec x, vec y, float m_) : pos(x), vel(y), m(m_){};
+  PM(vec x, vec y, float m_) : pos(x), vel(y), m(m_){
+    s.setRadius(5);
+    s.setPosition(pos.get_x(), pos.get_y());
+    s.setFillColor(sf::Color::White);
+  };
   PM() = default;
   
   void draw(sf::RenderWindow& wind){
@@ -121,6 +125,10 @@ auto apply_CF (PM const& pm1, float const& omega){ //deve essere un vecc perche 
   return vec(pm1.get_m()*omega*omega*pm1.get_pos().get_x(), 0);     //ossia ritorna un vec con componente solo lungo x, controlla se è giusto, ma dovrebbe esserlo
 }
 
+auto apply_gravity(PM const& pm1){
+  return vec(0, -pm1.get_m()*9.81);
+}
+
 //---------------------------------------------------------------
 
 class Chain {
@@ -132,17 +140,11 @@ class Chain {
     auto const v = pm.get_vel() + a * delta_t;
     auto const x = pm.get_pos() + (v + 0.5 * a * delta_t) * delta_t;
 
-    return PM(x, v, pm.get_m());
+    return PM(x.get_x(), x.get_y(), v.get_x(), v.get_y(), pm.get_m());
   }
 
  public:
   Chain(Hooke const& hooke) : hooke_(hooke){};
-
-//li definisco qui perche non so dove altrimenti
-    PM east_pole;
-    PM north_pole;
-    PM weast_pole;
-    PM south_pole;
 
   bool empty() { return ch_.empty(); };
   std::size_t size() const { return ch_.size(); };
@@ -150,23 +152,23 @@ class Chain {
   std::vector<PM> const &state() const {return ch_;};
  PM operator[] (int i) {return ch_[i];}
 
-  void initial_config(const float& ll ,const float& m ,const float& r ,const int& NoPM){ //costruisce la catena nella configurazione iniziale
-      auto theta = ll/r; //angolo della lunghezza a riposo 
-      for (int i = 0; i < NoPM; i++) {  // con questo ciclo for genero la configurazione iniziale della catena, assegnando la posizioni iniziali utilizzando funzioni di i
-      PM pm_temp(r *cos(theta*i), r * sin(theta*i) , 0, 0, m);  // l'argomento di cos e sin sono in modo tale che i punti, inizialmente, vengano disposti su una circonferenza
+  void initial_config(float const& theta, float const& m ,float const& r ,int const& NoPM){ //costruisce la catena nella configurazione iniziale
+    
+    for (int i = 0; i != NoPM/2; ++i) {  // con questo ciclo for genero la configurazione iniziale della catena, assegnando la posizioni iniziali utilizzando funzioni di i
+      PM pm_temp(r *cos(theta*i), r * sin(theta*i), 0, 0, m);  // l'argomento di cos e sin sono in modo tale che i punti, inizialmente, vengano disposti su una circonferenza
       ch_.push_back(pm_temp);
       std::cout<< "("<< pm_temp.get_pos().get_x() << ", " << pm_temp.get_pos().get_y() << ")" << '\n';
     };
-    east_pole = PM(vec(r,0), vec(0,0), m);
-    north_pole = PM(vec(0,r), vec(0,0), m);
-    weast_pole = PM(vec(-r,0), vec(0,0), m);
-    south_pole = PM(vec(0,-r), vec(0,0), m);
-    std::vector<PM> poles {east_pole, north_pole, weast_pole, south_pole};
-    for (int i = 0; i < 4; i++){
-      std::cout<< "polo_"<<i<<"=(" << poles[i].get_pos().get_x() << ", " << poles[i].get_pos().get_y() << ")" <<'\n';
-    }
-    
 
+  PM pm_temp(-r, 0,0, 0, m);
+  ch_.push_back(pm_temp); //metto il polo ovest
+  std::cout<< "("<< ch_[NoPM/2].get_pos().get_x() << ", " << ch_[NoPM/2].get_pos().get_y() << ")" << '\n';
+    
+    for (int i = NoPM/2 + 1; i != NoPM; ++i){
+      PM pm_tempp(r *cos(theta*i), r * sin(theta*i), 0, 0, m);  // l'argomento di cos e sin sono in modo tale che i punti, inizialmente, vengano disposti su una circonferenza
+      ch_.push_back(pm_tempp);
+      std::cout<< "("<< pm_tempp.get_pos().get_x() << ", " << pm_tempp.get_pos().get_y() << ")" << '\n';
+    }
     
     /*for (int i = 0; i < ch_.size(); i++){
       std::cout<< "x_"<<i<<"=(" << x(ch_[i], ch_[i+1]).get_x() << ", " << x(ch_[i], ch_[i+1]).get_y() << ")" <<'\n';
@@ -176,11 +178,23 @@ class Chain {
   }
 
   void evolve(double const dt) {
+
+    /*creo una copia della chain, poi calcolo l'evoluzione (ciclo for) e invece di fare *state_it = f(*state_it) faccio
+    *state_it = f(*state_it_copia)
+    */
+
+    std::vector<PM> ch_copy = ch_;
+ 
     auto state_it = ch_.begin();
     auto state_it_next = std::next(state_it);
     auto state_last = std::prev(ch_.end());
     
+    auto state_it_copy = ch_copy.begin();
+    auto state_it_next_copy = std::next(state_it_copy);
+    auto state_last_copy = std::prev(ch_copy.end());
+    
     vec f_prev(apply_hooke(*state_last, *state_it, hooke_) + apply_CF(*state_last,w)); 
+    
     /*ossia f_prev è la forza di hooke esercitata dall'ultimo elemento della catena sul primo 
     (ricordo che la catena è chiusa e il primo elemento è quello che giace sull'asse x, l'ultimo sarebbe quello appena sotto).
     Questo poichè nel ciclo for sotto inizio a calcolare le forze a partire dal primo elemento, questo è soggetto alla 
@@ -195,34 +209,25 @@ class Chain {
 
     bool first = false;
 
-    for (; state_it != state_last; ++state_it, ++state_it_next) {
-       vec f = apply_hooke(*state_it, *state_it_next, hooke_) + apply_CF(*state_it, w);
-       *state_it = solve(*state_it, f - f_prev, dt);
-     
-     if(*state_it == ch_[0] && first == true){
-      (*state_it).update_y(0.);
-      std::cout<< "polo est" <<*state_it;
-     }
+    for (; state_it != state_last; ++state_it, ++state_it_next, ++state_it_copy, ++state_it_next_copy) {
+       vec f = apply_hooke(*state_it_copy, *state_it_next_copy, hooke_) + apply_CF(*state_it_copy, w);
+       *state_it = solve(*state_it_copy, f - f_prev, dt);
 
-      else if(*state_it == ch_[static_cast<int> (ch_.size()/4)] && first == true){
-      (*state_it).update_x(0.);
-      std::cout<< "polo nord" <<*state_it;
-      }
-     
-     else if(*state_it == ch_[static_cast<int> (ch_.size()/2)] && first == true){
-      (*state_it).update_y(0.);
-      std::cout<< "polo ovest"<<*state_it;
-      }
-     
-     else if(*state_it == ch_[static_cast<int> (ch_.size()*3/4)] && first == true){
-      (*state_it).update_x(0.);
-      std::cout<< "polo sud"<<*state_it;
-      }
+    /*if(*state_it_copy == ch_copy[0]){ //ri-aggiorno la y del polo est (a dx)
+      (*state_it).update_y(0);
+    }
+    else if(*state_it_copy == ch_copy[ch_copy.size()/2]){ //ri-aggiorno la y del polo ovest (a sx)
+      (*state_it).update_y(0);
+    }*/
+         
+
     f_prev = f;
     first = true;
     }
-    vec f = apply_hooke(*ch_.begin(), *state_last, hooke_) + apply_CF(*ch_.begin(), w);
-    *state_last = solve(*state_last, f - f_prev, dt);
+    
+    vec f = apply_hooke(*ch_copy.begin(), *state_last_copy, hooke_) + apply_CF(*ch_copy.begin(), w);
+    *state_last = solve(*state_last_copy, f - f_prev, dt);
+
   };
 };
 

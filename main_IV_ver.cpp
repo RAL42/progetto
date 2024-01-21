@@ -21,27 +21,30 @@ std::string to_string_with_precision(const float a_value, const int n = 9){// ht
 
 
 
-
 int main() {
-  float const mass{10};
+  float const mass{100};
   float const k{100000.};
-  int const NoPM{700}; //Number Of PM nella catena
-  float const r{100}; //radius of the rest position of the chain
-  float const rest_length{2*pi*r/ NoPM}; //rest length is when the chain is a circumference
+  int const NoPM{60}; //Number Of PM nella catena SOLO NUMERI PARI!!!! PER LA FUNZIONE evolve DENTRO LA CLASSE CHAIN (nell'if)
+  assert(NoPM%2 == 0);
+
+  float const r{200}; //radius of the rest position of the chain
+  float const theta{2*pi/NoPM};
+  float const rest_length{theta*r}; //rest length is when the chain is a circumference
 
   Hooke spring{k, rest_length};
 
   Chain chain{spring};
-  chain.initial_config(rest_length, mass, r, NoPM);
+  chain.initial_config(theta, mass, r, NoPM);
 
-  w=100;
+  w=10;
+
 
   auto const delta_t{sf::milliseconds(1)};
   int const fps{60};
-  int const steps_per_evolution{1000 / fps};
+  int const steps_per_evolution{500 / fps};
 
-  unsigned const display_width = 0.9 * sf::VideoMode::getDesktopMode().width;
-  unsigned const display_height = 0.9 * sf::VideoMode::getDesktopMode().height;
+  unsigned const display_width = 0.85 * sf::VideoMode::getDesktopMode().width;
+  unsigned const display_height = 0.85 * sf::VideoMode::getDesktopMode().height;
   
 
     sf::Font font;
@@ -61,7 +64,9 @@ int main() {
   sf::View view{sf::Vector2f{0, 0}, window_size};  // view permette di cambiare l'origine, il primo vettore è l'origine, il secondo e la size della window
   window.setView(view);
 
-
+  sf::Vertex x_axis[] = {sf::Vertex(sf::Vector2f(-window_size.x, 0)), sf::Vertex(sf::Vector2f(window_size.x, 0))};
+  sf::Vertex y_axis[] = {sf::Vertex(sf::Vector2f(0, -window_size.y/2)), sf::Vertex(sf::Vector2f(0, window_size.y/2))};
+     
   while (window.isOpen()) {
     sf::Event event;
     while (window.pollEvent(event)) {
@@ -73,19 +78,20 @@ int main() {
     }
 
     window.clear(sf::Color::Black);
-    stringa.setString(to_string_with_precision(delta_t.asSeconds()));
-    window.draw(stringa); 
+    //stringa.setString(to_string_with_precision(delta_t.asSeconds()));
+    //window.draw(stringa); 
     
     
     auto const state = evolve(chain, steps_per_evolution, delta_t);
-
+    
   //std::cout<<"istante: " << delta_t.asSeconds() << '\n';
 
 for (int i = 0; i < chain.size(); ++i){
   chain[i].draw(window);
  // std::cout<< "PM_"<< i << " = (" << chain[i].get_pos().get_x() << ", " << chain[i].get_pos().get_y() << " ) \n"; 
 }
-    
+    window.draw(x_axis, 2, sf::Lines);
+    window.draw(y_axis, 2, sf::Lines);    
     window.display();
   }
 }
