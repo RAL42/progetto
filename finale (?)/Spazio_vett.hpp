@@ -19,7 +19,7 @@ public:
     float get_y() const;
     float norm() const;
   
-  template <typename T>
+ // template <typename T>
  // void update_pos(T p){ pos = p; };
 
   vec& operator+=(vec const&);
