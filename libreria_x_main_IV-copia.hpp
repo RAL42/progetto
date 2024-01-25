@@ -85,7 +85,7 @@ class Hooke {
   Hooke() = default;
 
   float get_k() const { return k_; }
-  vec get_lv() const { return lv_; } //lv stsa per "l vettoriale"
+  vec get_lv() const { return lv_; } //lv sta per "l vettoriale"
   float get_l() const {return l_;}
   void update_lv(vec const& lv) {lv_ = lv;}
 
@@ -99,7 +99,7 @@ float d(PM pm1, PM pm2) {  // distanza tra due PM
 }
 
 vec x(PM pm1, PM pm2) {
-  return pm2.get_pos() - pm1.get_pos();
+  return pm2.get_pos() - pm1.get_pos();       
 }  // vettore che esce da pm1 e punta pm2: pm1=pm_j; pm2=pm_j+1 oppure pm_j-1
 
 std::ostream &operator<<(std::ostream &output, PM pm) {
