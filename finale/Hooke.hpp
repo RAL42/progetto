@@ -1,5 +1,5 @@
-#ifndef HOOKE_CPP
-#define HOOKE_CPP
+#ifndef HOOKE_HPP
+#define HOOKE_HPP
 
 #include "Spazio_vett.hpp"
 

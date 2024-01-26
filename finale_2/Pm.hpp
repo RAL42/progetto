@@ -3,24 +3,24 @@
 #include "Spazio_vett.hpp"
 
 class PM {  // Punto Materiale
-  vec pos_;
-  vec vel_;
+  vec pos;
+  vec vel;
   float m;  // massa
 
   sf::CircleShape s;
 
  public:
   PM(float p_x, float p_y, float v_x, float v_y, float m_)
-      : pos_{p_x, p_y}, vel_{v_x, v_y}, m(m_) {  // constructor
+      : pos{p_x, p_y}, vel{v_x, v_y}, m(m_) {  // constructor
 
     s.setRadius(5);
-    s.setPosition(pos_.get_x(), pos_.get_y());
+    s.setPosition(pos.get_x(), pos.get_y());
     s.setFillColor(sf::Color::White);
   }
 
-  PM(vec x, vec y, float m_) : pos_(x), vel_(y), m(m_){
+  PM(vec x, vec y, float m_) : pos(x), vel(y), m(m_){
     s.setRadius(5);
-    s.setPosition(pos_.get_x(), pos_.get_y());
+    s.setPosition(pos.get_x(), pos.get_y());
     s.setFillColor(sf::Color::White);
   };
   PM() = default;

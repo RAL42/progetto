@@ -14,8 +14,6 @@ float d(PM, PM);  // distance between two PM
 
 vec x(PM, PM);  // vector coming out of pm1 pointing pm2: pm1=pm_j; pm2=pm_j+1 oppure pm_j-1
 
-std::ostream &operator<<(std::ostream &, PM);
-
 auto apply_hooke(PM const&, PM const&, Hooke&);
     // calculates the elastic force (it's a vec)
 

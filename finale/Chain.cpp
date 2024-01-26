@@ -1,6 +1,6 @@
 #include "Chain.hpp"
 #include <cassert>
-//--------------------- FREE FUNCTION ---------------------
+//------------------------------------------------------- FREE FUNCTION -------------------------------------------------------
 
 float w;
 
@@ -10,20 +10,14 @@ float d(PM pm1, PM pm2) {  // distanza tra due PM
 }
 
 vec x(PM pm1, PM pm2) {
-  std::cout<<"vettore che esce da pm1 e punta pm2 " << pm2.get_pos() - pm1.get_pos() << '\n';
+  std::cout<<"  vettore che esce da pm1 e punta pm2 " << pm2.get_pos() - pm1.get_pos() << '\n';
   return pm2.get_pos() - pm1.get_pos();
 }  // vettore che esce da pm1 e punta pm2: pm1=pm_j; pm2=pm_j+1 oppure pm_j-1
 
-std::ostream &operator<<(std::ostream &output, PM pm) {
-  output << "x = (" << pm.get_pos().get_x() << ", " << pm.get_pos().get_y() << ") \n";
-        // << "\n     v = (" << pm.get_vel().get_x() << ", " << pm.get_vel().get_y() << ") " << '\n';
-  return output;
-}
-
 auto apply_hooke(PM const& pm1, PM const& pm2, Hooke& hooke) { // calcola la forza (è un vec)
   auto temp_x = x(pm1, pm2);
-  hooke.update_lv(hooke.get_l() * temp_x/ temp_x.norm()); //x è il vettore che esce da PM1 e punta PM2, vedi dopo
-  return hooke.get_k() * ((pm2.get_pos() - pm1.get_pos()) - hooke.get_lv()); 
+  hooke.update_lv(hooke.get_l() * temp_x / temp_x.norm()); //x è il vettore che esce da PM1 e punta PM2, vedi dopo
+  return hooke.get_k() * (temp_x - hooke.get_lv()); 
 }
 
 auto apply_CF (PM const& pm1, float const& omega){ //deve essere un vecc perche dopo devo sommarlo per fare la F totale, in solve
@@ -32,7 +26,7 @@ auto apply_CF (PM const& pm1, float const& omega){ //deve essere un vecc perche 
 
 auto apply_gravity(PM const& pm1){return vec(0, -pm1.get_m()*9.81);}
 
-//--------------------- CHAIN MEMBER CLASS ---------------------
+//------------------------------------------------------- CHAIN MEMBER CLASS ------------------------------------------------------- 
 
 PM Chain::solve(PM pm, vec f, double const& delta_t) const {
     auto const a = f / pm.get_m();
@@ -76,15 +70,16 @@ void Chain::initial_config(float const& theta, float const& m ,float const& r ,i
   std::cout<<"size of chain initially = " << ch_.size() << '\n'; 
 }
 
+
 void Chain::evolve(double const& dt) {
-  std::cout<<"\n nell'evolve della Chain \n";   
+  std::cout<<"\nNell'evolve della Chain \n";   
     
    /*creo una copia della chain, poi calcolo l'evoluzione (ciclo for) e invece di fare *state_it = f(*state_it) faccio
   *state_it = f(*state_it_copia)
   */
 
   std::vector<PM> ch_copy = ch_;
-  assert(ch_copy.size() == ch_.size());  
+//  assert(ch_copy.size() == ch_.size());  
 
   auto state_it = ch_.begin();
   auto state_it_next = std::next(state_it);
@@ -109,49 +104,64 @@ void Chain::evolve(double const& dt) {
   std::cout<<"\n state_it_copy = " << std::distance(ch_copy.begin(), state_it_copy) << '\n';   
   std::cout<<"\n state_it = " << std::distance(ch_.begin(), state_it) << '\n';   
 */
-
-  vec f_prev(apply_hooke(*state_last, *state_it, hooke_) + apply_CF(*state_last,w)); 
-  std::cout<<"f_prev che esce da pm1 e punta pm2 " << f_prev << '\n';
+  std::cout<<"\npos_copy: "<< (*state_last_copy).get_pos() << '\n';
+  std::cout<<"pos: "<< (*state_last).get_pos() << '\n';
+  vec f_prev((-1)*(apply_hooke(*state_last, *state_it, hooke_) + apply_CF(*state_last,w))); 
+  std::cout<<"  f_prev data da pm1 e punta pm2 " << f_prev << '\n';
 
   /*ossia f_prev è la forza di hooke esercitata dall'ultimo elemento della catena sul primo 
   (ricordo che la catena è chiusa e il primo elemento è quello che giace sull'asse x, l'ultimo sarebbe quello appena sotto).
   Questo poichè nel ciclo for sotto inizio a calcolare le forze a partire dal primo elemento, questo è soggetto alla 
   forza data dall'elemento precedente (f_prev) e dall'elemento successivo, che calcolo dopo (f) (guarda il commento nella chain.hpp in /lab5) 
   */
-
   /*per rendere costanti i poli, faccio una copia delle loro coordinate x o y e ogni volta che aggiorno lo stato poi le rimetto in posizione
   Non sono sicuro al 100%: se faccio muovere il PM e poi gli cambio la coordinata, nel calcolo dell'evoluzione del punto successivo 
   la forza che rientra in quest'ultimo calcolo sarà quella calcolata con la "coordinata non spostata", si aggiusterà nell'iterazione 
   successiva no? Provo. 
   */
 
+  std::cout << "\nInizio for dei calcoli \n";
   for (; state_it != state_last; ++state_it, ++state_it_next, ++state_it_copy, ++state_it_next_copy) {
-    std::cout << "\n nel for dei calcoli \n";
-     vec f = apply_hooke(*state_it_copy, *state_it_next_copy, hooke_) + apply_CF(*state_it_copy, w);
-     std::cout<<"f data da pm1 su pm2" << f << '\n';
-     std::cout<<"f - f_prev che esce da pm1 e punta pm2 " << f - f_prev << '\n';
+    std::cout<<"\npos_copy: "<< (*state_it_copy).get_pos() << '\n';
+    std::cout<<"pos: "<< (*state_it).get_pos() << '\n';
+    
+    /*if (x(*state_it, *state_it_next).norm() >= (hooke_.get_l() + 1) ) //vincolo delle distanze
+    {
+      (*state_it).update_x(*state_it_copy);
+    }*/
+    
+    vec f = apply_hooke(*state_it_copy, *state_it_next_copy, hooke_) + apply_CF(*state_it_copy, w);
+    *state_it = solve(*state_it_copy, f - f_prev, dt);
 
-     *state_it = solve(*state_it_copy, f - f_prev, dt);
-
-  /*if(*state_it_copy == ch_copy[0]){ //ri-aggiorno la y del polo est (a dx)
+    if(std::distance(ch_.begin(), state_it) == 0){ //ri-aggiorno la y del polo est (a dx)
       (*state_it).update_y(0);
     }
-    else if(*state_it_copy == ch_copy[ch_copy.size()/2]){ //ri-aggiorno la y del polo ovest (a sx)
+    else if(std::distance(ch_.begin(), state_it) == ch_.size()/2){ //ri-aggiorno la y del polo ovest (a sx)
       (*state_it).update_y(0);
-    }*/
-    std::cout<<"  pos :"<< (*state_it_copy).get_pos() << '\n';
+    }
+    else if(std::distance(ch_.begin(), state_it) == ch_.size()/4){ //ri-aggiorno la x del polo nord
+      (*state_it).update_x(0);
+    }
+    else if(std::distance(ch_.begin(), state_it) == ch_.size()/4*3){ //ri-aggiorno la x del polo sud
+      (*state_it).update_x(0);
+    }
 
-    f_prev = f;
+     std::cout<<"  f data da pm1 su pm2 " << f << '\n';
+     std::cout<<"  f - f_prev = " << f - f_prev << '\n';
+
+    f_prev = (-1)*f;
   }
-
-  std::cout << "\n fuori dal for dei calcoli \n";
+  std::cout << "\n Fine dal for dei calcoli \n";
 
   vec f = apply_hooke(*ch_copy.begin(), *state_last_copy, hooke_) + apply_CF(*ch_copy.begin(), w);
-  std::cout<<"f data da pm1 su pm2 " << f << '\n';
-  std::cout<<"f - f_prev che esce da pm1 e punta pm2 " << f - f_prev << '\n';
-
   *state_last = solve(*state_last_copy, f - f_prev, dt);
 
-  std::cout << "\n fine evolve della Chain \n";
+  std::cout<<"\npos_copy: "<< (*state_it_copy).get_pos() << '\n';
+  std::cout<<"pos: "<< (*state_it).get_pos() << '\n';
+  std::cout<<"  f data da pm1 su pm2 " << f << '\n';
+  std::cout<<"  f - f_prev = " << f - f_prev << '\n';
 
+  std::cout << "\nFine evolve della Chain \n";
 };
+
+

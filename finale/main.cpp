@@ -2,24 +2,18 @@
 #include <cassert>
 #include <sstream>
 
-auto evolve(Chain &chain, int steps_per_evolution, sf::Time delta_t)
-{
+auto evolve(Chain &chain, int steps_per_evolution, sf::Time delta_t){
   double const dt{delta_t.asSeconds()};
-
   std::cout << "in evolve : dt=" << dt << '\n';
 
-  for (int i{0}; i != steps_per_evolution; ++i)
-  { // fa evolvere la chain ogni dt, i volte, fino a steps_per_evolution e restituisce quest'ultima evoluzione
+  for (int i{0}; i != steps_per_evolution; ++i) { // fa evolvere la chain ogni dt, i volte, fino a steps_per_evolution e restituisce quest'ultima evoluzione
     chain.evolve(dt);
-
-    std::cout << "\n fine evolve del main\n";
+    std::cout << "\nFine evolve del main\n";
   }
-
   return chain.state();
 }
 
-std::string to_string_with_precision(const float a_value, const int n = 9)
-{ // https://stackoverflow.com/questions/16605967/set-precision-of-stdto-string-when-converting-floating-point-values
+std::string to_string_with_precision(const float a_value, const int n = 1) { // https://stackoverflow.com/questions/16605967/set-precision-of-stdto-string-when-converting-floating-point-values
   std::ostringstream out;
   out.precision(n);
   out << std::fixed << a_value;
@@ -29,11 +23,11 @@ std::string to_string_with_precision(const float a_value, const int n = 9)
 int main()
 {
   float const mass{100};
-  float const k{1000.};
-  int const NoPM{10};
+  float const k{10000.};
+  int const NoPM{100};
   assert(NoPM > 0 && NoPM % 2 == 0); // Number Of PM nella catena SOLO NUMERI PARI!!!! PER LA FUNZIONE evolve DENTRO LA CLASSE CHAIN (nell'if)
 
-  float const r{200}; // radius of the rest position of the chain
+  float const r{100}; // radius of the rest position of the chain
   float const theta{2 * pi / NoPM};
   float const rest_length{theta * r}; // rest length is when the chain is a circumference
 
@@ -48,19 +42,25 @@ int main()
 
   auto const delta_t{sf::milliseconds(1)};
   int const fps{60};
-  int const steps_per_evolution{60 / fps};
+  int var = 100;
+  int const steps_per_evolution{var / fps};
 
   unsigned const display_width = 0.85 * sf::VideoMode::getDesktopMode().width;
   unsigned const display_height = 0.85 * sf::VideoMode::getDesktopMode().height;
 
   sf::Font font;
-  font.loadFromFile("./font/grasping.ttf");
-  sf::Text stringa;
-  stringa.setFont(font);
-  // stringa.setString("caccamerda");
-  stringa.setCharacterSize(40);
-  stringa.setFillColor(sf::Color::White);
-  stringa.setPosition(300, -300);
+  font.loadFromFile("./font/fresco_stamp.ttf");
+  sf::Text stringa1;
+  sf::Text stringa2;
+  stringa1.setFont(font);
+  stringa1.setCharacterSize(40);
+  stringa1.setFillColor(sf::Color::White);
+  stringa1.setPosition(300, -300);
+
+  stringa2.setFont(font);
+  stringa2.setCharacterSize(40);
+  stringa2.setFillColor(sf::Color::Magenta);
+  stringa2.setPosition(300, -350);
 
   sf::RenderWindow window(sf::VideoMode(display_width, display_height), "Chain Evolution");
   window.setFramerateLimit(fps);
@@ -76,34 +76,35 @@ int main()
   bool first = false;
 
   while (window.isOpen()) {
-
-   // std::cout << "\n inizio while \n";
-    sf::Event event;
-    
+    sf::Event event;    
     while (window.pollEvent(event)) {
-      if (event.type == sf::Event::Closed)
-      {
-        window.close();
-      }
+      if (event.type == sf::Event::Closed) window.close();
       if (sf::Keyboard::isKeyPressed(sf::Keyboard::Enter)){
         first = true;
         std::cout<<first<< '\n';
-      }if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)){
+      }
+      if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)){
         first = false;
         std::cout<<first<< '\n';
       }
+      if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) ++w;
+      if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) --w;      
+      if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) var += 1000 ;
+      if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) var -= 1000 ;
     }
 
     if (first){
       window.clear(sf::Color::Black);
-      // stringa.setString(to_string_with_precision(delta_t.asSeconds()));
-      // window.draw(stringa);
+       stringa1.setString("var is " + to_string_with_precision(var));
+       window.draw(stringa1);
 
-      std::cout << "\n chiamo evolve nel main\n";
+       stringa2.setString("W is " + to_string_with_precision(w));
+       window.draw(stringa2);
+      std::cout << "\nchiamo evolve nel main\n";
 
       auto const state = evolve(chain, steps_per_evolution, delta_t);
 
-      std::cout << "\n Inizio for del main per disegnare \n";
+      std::cout << "\nInizio for del main per disegnare \n";
       for (int i = 0; i < chain.size(); ++i) {
         chain[i].draw(window);
         //std::cout<<"pos :"<< chain[i].get_pos() << "vel :" << chain[i].get_vel() << '\n';
