@@ -22,12 +22,12 @@ std::string to_string_with_precision(const float a_value, const int n = 1) { // 
 
 int main()
 {
-  float const mass{100};
-  float const k{10000.};
+  float const mass{10000000.};
+  float const k{1000.};
   int const NoPM{100};
   assert(NoPM > 0 && NoPM % 2 == 0); // Number Of PM nella catena SOLO NUMERI PARI!!!! PER LA FUNZIONE evolve DENTRO LA CLASSE CHAIN (nell'if)
 
-  float const r{100}; // radius of the rest position of the chain
+  float const r{200}; // radius of the rest position of the chain
   float const theta{2 * pi / NoPM};
   float const rest_length{theta * r}; // rest length is when the chain is a circumference
 
@@ -36,14 +36,13 @@ int main()
   Chain chain{spring};
   chain.initial_config(theta, mass, r, NoPM);
 
-  w = 10; // la modifico nella libreria chain.hpp
+  w = 10.; // la modifico nella libreria chain.hpp
 
   std::cout << "m=" << mass << " k=" << k << " NoPM=" << NoPM << " w=" << w << '\n';
 
   auto const delta_t{sf::milliseconds(1)};
   int const fps{60};
-  int var = 100;
-  int const steps_per_evolution{var / fps};
+  int steps_per_evolution{100/ fps};
 
   unsigned const display_width = 0.85 * sf::VideoMode::getDesktopMode().width;
   unsigned const display_height = 0.85 * sf::VideoMode::getDesktopMode().height;
@@ -52,6 +51,7 @@ int main()
   font.loadFromFile("./font/fresco_stamp.ttf");
   sf::Text stringa1;
   sf::Text stringa2;
+  sf::Text stringa3;
   stringa1.setFont(font);
   stringa1.setCharacterSize(40);
   stringa1.setFillColor(sf::Color::White);
@@ -73,46 +73,50 @@ int main()
   sf::Vertex x_axis[] = {sf::Vertex(sf::Vector2f(-window_size.x, 0)), sf::Vertex(sf::Vector2f(window_size.x, 0))};
   sf::Vertex y_axis[] = {sf::Vertex(sf::Vector2f(0, -window_size.y / 2)), sf::Vertex(sf::Vector2f(0, window_size.y / 2))};
    
-  bool first = false;
+  bool start = false;
 
   while (window.isOpen()) {
+
+
     sf::Event event;    
     while (window.pollEvent(event)) {
       if (event.type == sf::Event::Closed) window.close();
       if (sf::Keyboard::isKeyPressed(sf::Keyboard::Enter)){
-        first = true;
-        std::cout<<first<< '\n';
+        start = true;
+        std::cout<<start<< '\n';
       }
       if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)){
-        first = false;
-        std::cout<<first<< '\n';
+        start = false;
+        std::cout<<start<< '\n';
       }
       if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) ++w;
       if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) --w;      
-      if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) var += 1000 ;
-      if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) var -= 1000 ;
+      if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) ++steps_per_evolution ;
+      if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) --steps_per_evolution ;
     }
 
-    if (first){
+    if (start){
       window.clear(sf::Color::Black);
-       stringa1.setString("var is " + to_string_with_precision(var));
+       stringa1.setString("steps_per_evolution is " + to_string_with_precision(steps_per_evolution));
        window.draw(stringa1);
 
        stringa2.setString("W is " + to_string_with_precision(w));
        window.draw(stringa2);
+
       std::cout << "\nchiamo evolve nel main\n";
 
       auto const state = evolve(chain, steps_per_evolution, delta_t);
 
       std::cout << "\nInizio for del main per disegnare \n";
-      for (int i = 0; i < chain.size(); ++i) {
+      for (long unsigned int i = 0; i < chain.size(); ++i) {
         chain[i].draw(window);
         //std::cout<<"pos :"<< chain[i].get_pos() << "vel :" << chain[i].get_vel() << '\n';
       }
       std::cout << "Fuori for del main per disegnare \n";
-      
+    
       window.draw(x_axis, 2, sf::Lines);
-      window.draw(y_axis, 2, sf::Lines);
+      window.draw(y_axis, 2, sf::Lines);  
+  
       window.display();
     }
   }

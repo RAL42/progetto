@@ -33,12 +33,6 @@ vec& vec::operator/=(float const& scalar) {
   return *this;
 }
 
-/*vec& vec::operator=(vec const& other) {
-  v.x = other.v.x;
-  v.y = other.v.y; 
-  return *this;
-}*/
-
 void vec::update_x(float const& z) {
   v.x= z;
 }
@@ -78,3 +72,4 @@ vec operator/(vec const& a, float const& b) {
 bool operator==(vec const& a, vec const& b) {
   return a.get_x() == b.get_x() && a.get_y() == b.get_y();
 }
+

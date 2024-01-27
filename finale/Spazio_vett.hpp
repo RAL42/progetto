@@ -11,7 +11,6 @@ sf::Vector2f v;
 
 public:
     vec(float x, float y): v{x, y} {}; //parametrized constructor
-    vec(vec const& other): v{other.v.x, other.v.y} {}; //copy constructor
     vec() = default; //default constructor
 
     sf::Vector2f state() const;
@@ -26,7 +25,6 @@ public:
   vec& operator-=(vec const&);
   vec& operator*=(float const&);
   vec& operator/=(float const&);
-  //vec& operator=(vec const&); //c'è già il copy constructor
 
   void update_x(float const&);
   void update_y(float const&);

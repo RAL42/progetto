@@ -36,7 +36,7 @@ class PM {  // Punto Materiale
 
   vec get_pos() const ;
   vec get_vel() const ;
-  PM& operator= (PM ) ;
+  
 };
 
 #endif

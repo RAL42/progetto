@@ -16,9 +16,3 @@ void PM::update_y(float const& z) {pos_.update_y(z);};
 
 vec PM::get_pos() const { return pos_; }
 vec PM::get_vel() const { return vel_; }
-
-PM& PM::operator= (PM other_pm){
-    pos_ = other_pm.get_pos();
-    vel_ = other_pm.get_vel();
-    return *this;
-    }

@@ -3,6 +3,7 @@
 //------------------------------------------------------- FREE FUNCTION -------------------------------------------------------
 
 float w;
+bool anticlock = true;
 
 float d(PM pm1, PM pm2) {  // distanza tra due PM
   vec v = pm1.get_pos() - pm2.get_pos();
@@ -73,13 +74,18 @@ void Chain::initial_config(float const& theta, float const& m ,float const& r ,i
 
 void Chain::evolve(double const& dt) {
   std::cout<<"\nNell'evolve della Chain \n";   
-    
+  
    /*creo una copia della chain, poi calcolo l'evoluzione (ciclo for) e invece di fare *state_it = f(*state_it) faccio
   *state_it = f(*state_it_copia)
   */
 
   std::vector<PM> ch_copy = ch_;
 //  assert(ch_copy.size() == ch_.size());  
+
+  if (anticlock){//integra in senso antiorario
+    anticlock = !anticlock;
+  
+  std::cout << "\nANTIORARIO \n";
 
   auto state_it = ch_.begin();
   auto state_it_next = std::next(state_it);
@@ -106,7 +112,9 @@ void Chain::evolve(double const& dt) {
 */
   std::cout<<"\npos_copy: "<< (*state_last_copy).get_pos() << '\n';
   std::cout<<"pos: "<< (*state_last).get_pos() << '\n';
+
   vec f_prev((-1)*(apply_hooke(*state_last, *state_it, hooke_) + apply_CF(*state_last,w))); 
+  
   std::cout<<"  f_prev data da pm1 e punta pm2 " << f_prev << '\n';
 
   /*ossia f_prev è la forza di hooke esercitata dall'ultimo elemento della catena sul primo 
@@ -133,16 +141,16 @@ void Chain::evolve(double const& dt) {
     vec f = apply_hooke(*state_it_copy, *state_it_next_copy, hooke_) + apply_CF(*state_it_copy, w);
     *state_it = solve(*state_it_copy, f - f_prev, dt);
 
-    if(std::distance(ch_.begin(), state_it) == 0){ //ri-aggiorno la y del polo est (a dx)
+  if(std::distance(ch_.begin(), state_it) == 0){ //ri-aggiorno la y del polo est (a dx)
       (*state_it).update_y(0);
     }
-    else if(std::distance(ch_.begin(), state_it) == ch_.size()/2){ //ri-aggiorno la y del polo ovest (a sx)
+    else if(static_cast<long unsigned int>(std::distance(ch_.begin(), state_it)) == ch_.size()/2){ //ri-aggiorno la y del polo ovest (a sx)
       (*state_it).update_y(0);
     }
-    else if(std::distance(ch_.begin(), state_it) == ch_.size()/4){ //ri-aggiorno la x del polo nord
+    else if(static_cast<long unsigned int>(std::distance(ch_.begin(), state_it)) == ch_.size()/4){ //ri-aggiorno la x del polo nord
       (*state_it).update_x(0);
     }
-    else if(std::distance(ch_.begin(), state_it) == ch_.size()/4*3){ //ri-aggiorno la x del polo sud
+    else if(static_cast<long unsigned int>(std::distance(ch_.begin(), state_it)) == ch_.size()/4*3){ //ri-aggiorno la x del polo sud
       (*state_it).update_x(0);
     }
 
@@ -162,6 +170,78 @@ void Chain::evolve(double const& dt) {
   std::cout<<"  f - f_prev = " << f - f_prev << '\n';
 
   std::cout << "\nFine evolve della Chain \n";
+
+
+
+  }else{//integra in senso orario
+   anticlock = !anticlock;
+  
+  std::cout << "\nORARIO \n";
+
+  auto state_it = std::prev(ch_.end());
+  auto state_it_next = std::prev(state_it);
+  auto state_last =  ch_.begin();
+
+  auto state_it_copy = std::prev(ch_copy.end());
+  auto state_it_next_copy = std::prev(state_it_copy);
+  auto state_last_copy =  ch_copy.begin();
+
+  std::cout<<"\npos_copy: "<< (*state_last_copy).get_pos() << '\n';
+  std::cout<<"pos: "<< (*state_last).get_pos() << '\n';
+
+  vec f_prev((-1)*((apply_hooke(*state_last, *state_it, hooke_) + apply_CF(*state_last,w)))); 
+  
+  std::cout<<"  f_prev data da pm1 e punta pm2 " << f_prev << '\n';
+  std::cout << "\nInizio for dei calcoli \n";
+
+  for (; state_it != state_last; --state_it, --state_it_next, --state_it_copy, --state_it_next_copy) {
+  
+    std::cout<<"\npos_copy: "<< (*state_it_copy).get_pos() << '\n';
+    std::cout<<"pos: "<< (*state_it).get_pos() << '\n';
+    
+    /*if (x(*state_it, *state_it_next).norm() >= (hooke_.get_l() + 1) ) //vincolo delle distanze
+    {
+      (*state_it).update_x(*state_it_copy);
+    }*/
+    
+    vec f = apply_hooke(*state_it_copy, *state_it_next_copy, hooke_) + apply_CF(*state_it_copy, w);
+    *state_it = solve(*state_it_copy, f - f_prev, dt);
+
+    if(std::distance(ch_.begin(), state_it) == 0){ //ri-aggiorno la y del polo est (a dx)
+      (*state_it).update_y(0);
+    }
+    else if(static_cast<long unsigned int>(std::distance(ch_.begin(), state_it)) == ch_.size()/2){ //ri-aggiorno la y del polo ovest (a sx)
+      (*state_it).update_y(0);
+    }
+    else if(static_cast<long unsigned int>(std::distance(ch_.begin(), state_it)) == ch_.size()/4){ //ri-aggiorno la x del polo nord
+      (*state_it).update_x(0);
+    }
+    else if(static_cast<long unsigned int>(std::distance(ch_.begin(), state_it)) == ch_.size()/4*3){ //ri-aggiorno la x del polo sud
+      (*state_it).update_x(0);
+    }
+
+     std::cout<<"  f data da pm1 su pm2 " << f << '\n';
+     std::cout<<"  f - f_prev = " << f - f_prev << '\n';
+
+    f_prev = (-1)*f;
+  }
+  std::cout << "\n Fine dal for dei calcoli \n";
+
+  vec f = apply_hooke(*std::prev(ch_.end()), *state_last_copy, hooke_) + apply_CF(*std::prev(ch_.end()), w);
+  *state_last = solve(*state_last_copy, f - f_prev, dt);
+
+  std::cout<<"\npos_copy: "<< (*state_it_copy).get_pos() << '\n';
+  std::cout<<"pos: "<< (*state_it).get_pos() << '\n';
+  std::cout<<"  f data da pm1 su pm2 " << f << '\n';
+  std::cout<<"  f - f_prev = " << f - f_prev << '\n';
+
+  std::cout << "\nFine evolve della Chain \n";
+
+
+  }
+
+
+
 };
 
 
