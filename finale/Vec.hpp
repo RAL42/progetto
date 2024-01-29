@@ -1,5 +1,5 @@
-#ifndef SPAZIO_VETT
-#define SPAZIO_VETT
+#ifndef VEC
+#define VEC
 
 #include <SFML/Graphics.hpp>
 #include <cmath>

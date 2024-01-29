@@ -1,4 +1,4 @@
-#include"Spazio_vett.hpp"
+#include"Vec.hpp"
 
 float vec::get_x() const {return v.x;};
 float vec::get_y() const {return v.y;};
