@@ -22,46 +22,75 @@ std::string to_string_with_precision(const float a_value, const int n = 1) { // 
 
 int main()
 {
-  float const mass{10000000.};
-  float const k{1000.};
-  int const NoPM{100};
-  assert(NoPM > 0 && NoPM % 2 == 0); // Number Of PM nella catena SOLO NUMERI PARI!!!! PER LA FUNZIONE evolve DENTRO LA CLASSE CHAIN (nell'if)
+  float mass{};
+  float k{};
+  int NoPM{};
+  float r{}; // radius of the rest position of the chain
 
-  float const r{200}; // radius of the rest position of the chain
+  std::cout<<"Inserisci massa dei Punti Materiali \n";
+  std::cin >> mass;
+  assert(mass > 0.);
+
+  std::cout<<"Inserisci la costante elastica k\n";
+  std::cin>> k;
+  if(std::cin.fail()){throw std::runtime_error{"Incorrect Input"};};
+
+  std::cout<<"Inserisci un numero multiplo di 4 di punti materiali\n";
+  std::cin>> NoPM;
+  assert(NoPM > 0 && NoPM % 4 == 0); // Number Of PM nella catena SOLO NUMERI PARI!!!! PER LA FUNZIONE evolve DENTRO LA CLASSE CHAIN (nell'if)
+  
+  std::cout<<"Inserisci il raggio della configurazione inziale\n";
+  std::cin>> r;
+  assert(r>0.);
+
+  std::cout<<"Inserisci la velocità angolare \n";
+  std::cin>> w;
+  if(std::cin.fail()){throw std::runtime_error{"Incorrect Input"};};
+
   float const theta{2 * pi / NoPM};
   float const rest_length{theta * r}; // rest length is when the chain is a circumference
-
+ 
   Hooke spring{k, rest_length};
 
   Chain chain{spring};
   chain.initial_config(theta, mass, r, NoPM);
 
-  w = 10.; // la modifico nella libreria chain.hpp
-
   std::cout << "m=" << mass << " k=" << k << " NoPM=" << NoPM << " w=" << w << '\n';
 
   auto const delta_t{sf::milliseconds(1)};
   int const fps{60};
-  int steps_per_evolution{100/ fps};
+  int steps_per_evolution{120/ fps};
 
   unsigned const display_width = 0.85 * sf::VideoMode::getDesktopMode().width;
   unsigned const display_height = 0.85 * sf::VideoMode::getDesktopMode().height;
 
   sf::Font font;
   font.loadFromFile("./font/fresco_stamp.ttf");
-  sf::Text stringa1;
-  sf::Text stringa2;
-  sf::Text stringa3;
-  stringa1.setFont(font);
-  stringa1.setCharacterSize(40);
-  stringa1.setFillColor(sf::Color::White);
-  stringa1.setPosition(300, -300);
+  sf::Text string_w;
+  sf::Text string_steps;
+  sf::Text string_NoPM;
+  sf::Text string_k;
+  string_k.setFont(font);
+  string_k.setCharacterSize(40);
+  string_k.setFillColor(sf::Color::Magenta);
+  string_k.setPosition(300, -400);
+    
+  string_NoPM.setFont(font);
+  string_NoPM.setCharacterSize(40);
+  string_NoPM.setFillColor(sf::Color::Magenta);
+  string_NoPM.setPosition(300, -250);
+  
+  string_w.setFont(font);
+  string_w.setCharacterSize(40);
+  string_w.setFillColor(sf::Color::White);
+  string_w.setPosition(300, -300);
 
-  stringa2.setFont(font);
-  stringa2.setCharacterSize(40);
-  stringa2.setFillColor(sf::Color::Magenta);
-  stringa2.setPosition(300, -350);
+  string_steps.setFont(font);
+  string_steps.setCharacterSize(40);
+  string_steps.setFillColor(sf::Color::Magenta);
+  string_steps.setPosition(300, -350);
 
+  
   sf::RenderWindow window(sf::VideoMode(display_width, display_height), "Chain Evolution");
   window.setFramerateLimit(fps);
   window.setPosition(sf::Vector2i(50, 50));
@@ -74,6 +103,7 @@ int main()
   sf::Vertex y_axis[] = {sf::Vertex(sf::Vector2f(0, -window_size.y / 2)), sf::Vertex(sf::Vector2f(0, window_size.y / 2))};
    
   bool start = false;
+  bool first = true;
 
   while (window.isOpen()) {
 
@@ -83,6 +113,7 @@ int main()
       if (event.type == sf::Event::Closed) window.close();
       if (sf::Keyboard::isKeyPressed(sf::Keyboard::Enter)){
         start = true;
+        first = false;
         std::cout<<start<< '\n';
       }
       if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)){
@@ -95,13 +126,47 @@ int main()
       if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) --steps_per_evolution ;
     }
 
-    if (start){
+  
+    if (first) { //disegno la condizione iniziale finche non premo invio
       window.clear(sf::Color::Black);
-       stringa1.setString("steps_per_evolution is " + to_string_with_precision(steps_per_evolution));
-       window.draw(stringa1);
+  
+      string_k.setString("k is " + to_string_with_precision(k));
+      window.draw(string_k);      
+  
+      string_NoPM.setString("NoPM is " + to_string_with_precision(NoPM));
+      window.draw(string_NoPM);
+      
+      string_w.setString("steps_per_evolution is " + to_string_with_precision(steps_per_evolution));
+      window.draw(string_w);
 
-       stringa2.setString("W is " + to_string_with_precision(w));
-       window.draw(stringa2);
+      string_steps.setString("W is " + to_string_with_precision(w));
+      window.draw(string_steps);
+
+      for (long unsigned int i = 0; i < chain.size(); ++i) {
+        chain[i].draw(window);
+        // std::cout<<"pos :"<< chain[i].get_pos() << "vel :" << chain[i].get_vel() << '\n';
+      }
+
+      window.draw(x_axis, 2, sf::Lines);
+      window.draw(y_axis, 2, sf::Lines);
+
+      window.display();
+
+    }
+    if (start) {
+      window.clear(sf::Color::Black);
+
+      string_NoPM.setString("k is " + to_string_with_precision(k));
+      window.draw(string_k);      
+  
+      string_NoPM.setString("NoPM is " + to_string_with_precision(NoPM));
+      window.draw(string_NoPM);
+      
+      string_w.setString("steps_per_evolution is " + to_string_with_precision(steps_per_evolution));
+      window.draw(string_w);
+
+      string_steps.setString("W is " + to_string_with_precision(w));
+      window.draw(string_steps);
 
       std::cout << "\nchiamo evolve nel main\n";
 
@@ -110,13 +175,13 @@ int main()
       std::cout << "\nInizio for del main per disegnare \n";
       for (long unsigned int i = 0; i < chain.size(); ++i) {
         chain[i].draw(window);
-        //std::cout<<"pos :"<< chain[i].get_pos() << "vel :" << chain[i].get_vel() << '\n';
+        // std::cout<<"pos :"<< chain[i].get_pos() << "vel :" << chain[i].get_vel() << '\n';
       }
       std::cout << "Fuori for del main per disegnare \n";
-    
+
       window.draw(x_axis, 2, sf::Lines);
-      window.draw(y_axis, 2, sf::Lines);  
-  
+      window.draw(y_axis, 2, sf::Lines);
+
       window.display();
     }
   }

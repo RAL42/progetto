@@ -10,18 +10,20 @@
 const float pi = M_PI;  // use an alias
 extern float w;
 
-float d(PM, PM);  // distance between two PM
+float d(PM, PM);  
+    // distance between two PM
 
-vec x(PM, PM);  // vector coming out of pm1 pointing pm2: pm1=pm_j; pm2=pm_j+1 oppure pm_j-1
+vec x(PM, PM); 
+    // vector coming out of pm1 pointing pm2: pm1=pm_j; pm2=pm_j+1 oppure pm_j-1
 
-auto apply_hooke(PM const&, PM const&, Hooke&);
+vec apply_hooke(PM const&, PM const&, Hooke&);
     // calculates the elastic force (it's a vec)
 
-auto apply_CF (PM const&, float const&);
+vec apply_CF (PM const&, float const&);
     //deve essere un vec perche dopo devo sommarlo per fare la F totale, in solve
     //ossia ritorna un vec con componente solo lungo x, controlla se è giusto, ma dovrebbe esserlo
 
-auto apply_gravity(PM const&);
+vec apply_gravity(PM const&);
 
 //--------------------- CHAIN CLASS ---------------------
 
