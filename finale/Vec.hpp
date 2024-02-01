@@ -6,27 +6,23 @@
 
 // spazio vettoriale su SFML
 
-class vec
-{
+class vec {
   sf::Vector2f v;
 
-public:
-  vec(float x, float y) : v{x, y} {}; // parametrized constructor
-  vec() = default;                    // default constructor
+ public:
+  vec(float x, float y) : v{x, y} {};  // parametrized constructor
+  vec() = default;                     // default constructor
 
   sf::Vector2f state() const;
-  float get_x() const;
-  float get_y() const;
-  float norm() const;
-
-  // template <typename T>
-  // void update_pos(T p){ pos = p; };
 
   vec &operator+=(vec const &);
   vec &operator-=(vec const &);
   vec &operator*=(float const &);
   vec &operator/=(float const &);
 
+  float get_x() const;
+  float get_y() const;
+  float norm() const;
   void update_x(float const &);
   void update_y(float const &);
 };
