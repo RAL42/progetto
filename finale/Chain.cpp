@@ -16,12 +16,9 @@ vec x(PM pm1, PM pm2) {
   return pm2.get_pos() - pm1.get_pos();
 }  // vettore che esce da pm1 e punta pm2: pm1=pm_j; pm2=pm_j+1 oppure pm_j-1
 
-vec apply_hooke(PM const& pm1, PM const& pm2,
-                Hooke& hooke) {  // calcola la forza esercitata da pm2 su pm1
+vec apply_hooke(PM const& pm1, PM const& pm2, Hooke& hooke) {  // calcola la forza esercitata da pm2 su pm1
   auto temp_x = x(pm1, pm2);
-  hooke.update_lv(
-      hooke.get_l() * temp_x /
-      temp_x.norm());  // x è il vettore che esce da PM1 e punta PM2, vedi dopo
+  hooke.update_lv(hooke.get_l() * temp_x / temp_x.norm());  // x è il vettore che esce da PM1 e punta PM2, vedi dopo
   return hooke.get_k() * (temp_x - hooke.get_lv());
 }
 
@@ -155,6 +152,9 @@ void Chain::evolve(double const& dt) {
     */
 
     std::cout << "\nInizio for dei calcoli \n";
+    bool first = true;
+    bool second = true;
+    bool third = true;
     for (; state_it != state_last;
          ++state_it, ++state_it_next, ++state_it_copy, ++state_it_next_copy) {
       // std::cout<<"\npos_copy: "<< (*state_it_copy).get_pos() << '\n';
@@ -169,6 +169,31 @@ void Chain::evolve(double const& dt) {
       vec f = apply_hooke(*state_it_copy, *state_it_next_copy, hooke_) +
               apply_CF(*state_it_copy, w);
       *state_it = solve(*state_it_copy, f + f_prev, dt);
+
+      if(first){
+        first = false;
+          std::cout<< "\n  x(it, next) = " << x(*state_it_copy, *state_it_next_copy) << '\n';
+          std::cout<<"  f_hooke data dal secondo sul primo  " << apply_hooke(*state_it_copy, *state_it_next_copy, hooke_) << '\n';
+          std::cout<<"  f_cf del primo  " << apply_CF(*state_it_copy, w) << '\n';
+          std::cout<<"  f_prev data dall'ultimo sul primo " << f_prev << '\n';
+          std::cout<<"  f + f_prev = " << f + f_prev << '\n';
+      } else if(second){
+        second = false;
+          std::cout<< "\n  x(it, next) = " << x(*state_it_copy, *state_it_next_copy) << '\n';
+          std::cout<<"  f_hooke data dal terzo sul secondo  " << apply_hooke(*state_it_copy, *state_it_next_copy, hooke_) << '\n';
+          std::cout<<"  f_cf del secondo  " << apply_CF(*state_it_copy, w) << '\n';
+          std::cout<<"  f_prev data dal primo sul secondo " << f_prev << '\n';
+          std::cout<<"  f + f_prev = " << f + f_prev << '\n'; 
+      } else if(third){
+        third = false;
+          std::cout<< "\n  x(it, next) = " << x(*state_it_copy, *state_it_next_copy) << '\n';
+          std::cout<<"  f_hooke data dal quarto sul terzo  " << apply_hooke(*state_it_copy, *state_it_next_copy, hooke_) << '\n';
+          std::cout<<"  f_cf del terzo  " << apply_CF(*state_it_copy, w) << '\n';
+          std::cout<<"  f_prev data dal secondo sul terzo " << f_prev << '\n';
+          std::cout<<"  f + f_prev = " << f + f_prev << '\n';
+        
+      }
+
 
       if (std::distance(ch_.begin(), state_it) ==
           0) {  // ri-aggiorno la y del polo est (a dx)
@@ -192,10 +217,13 @@ void Chain::evolve(double const& dt) {
 
       f_prev = apply_hooke(*state_it_next_copy, *state_it_copy, hooke_) +
                apply_CF(*state_it_copy, w);
+
+       std::cout<<"\n  f_prev = " << f_prev << '\n';
+
     }
     std::cout << "\n Fine dal for dei calcoli \n";
 
-    vec f = apply_hooke(*ch_copy.begin(), *state_last_copy, hooke_) +
+    vec f = apply_hooke(*state_last_copy, *ch_copy.begin(), hooke_) +
             apply_CF(*ch_copy.begin(), w);
     *state_last = solve(*state_last_copy, f + f_prev, dt);
 
@@ -265,12 +293,12 @@ void Chain::evolve(double const& dt) {
       //  std::cout<<"  f data da pm1 su pm2 " << f << '\n';
       //  std::cout<<"  f + f_prev = " << f + f_prev << '\n';
 
-      f_prev = apply_hooke(*state_it_next_copy, *state_it_copy, hooke_) +
+      f_prev =  apply_hooke(*state_it_next_copy, *state_it_copy, hooke_) +
                apply_CF(*state_it_copy, w);
     }
     std::cout << "\n Fine dal for dei calcoli \n";
 
-    vec f = apply_hooke(*std::prev(ch_copy.end()), *state_last_copy, hooke_) +
+    vec f = apply_hooke(*state_last_copy, *std::prev(ch_copy.end()), hooke_) +
             apply_CF(*std::prev(ch_copy.end()), w);
     *state_last = solve(*state_last_copy, f + f_prev, dt);
 
