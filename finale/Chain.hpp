@@ -10,6 +10,8 @@
 
 const float pi = M_PI;  // use an alias
 extern float w;
+extern std::vector<double> Kinetic_energies;
+extern std::vector<double> Potential_energies;
 
 float d(PM, PM);
 // distance between two PM

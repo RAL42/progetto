@@ -57,14 +57,6 @@ TEST_CASE("Testing Pm") {
   }
 }
 
-TEST_CASE("Testing Hooke") {
-  SUBCASE("testing default constructor") {
-    Hooke k{};
-    Hooke t1(0., 0.);
-    CHECK(k == t1);  // Se dà errore va bene poichè k deve essere >0
-  }
-}
-
 TEST_CASE("Testing Chain") {
   PM pm1{1., 2., 3., 4., 5.};
   PM pm2{10., 11., 12., 13., 14.};

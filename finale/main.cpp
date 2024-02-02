@@ -1,17 +1,16 @@
 #include <cassert>
+#include <numeric>
 #include <sstream>
 
 #include "Chain.hpp"
 
 auto evolve(Chain &chain, int steps_per_evolution, sf::Time delta_t) {
   double const dt{delta_t.asSeconds()};
-  std::cout << "in evolve : dt=" << dt << '\n';
 
   for (int i{0}; i != steps_per_evolution;
        ++i) {  // fa evolvere la chain ogni dt, i volte, fino a
                // steps_per_evolution e restituisce quest'ultima evoluzione
     chain.evolve(dt);
-    std::cout << "\nFine evolve del main\n";
   }
   return chain.state();
 }
@@ -44,9 +43,7 @@ int main() {
 
   std::cout << "Inserisci un numero multiplo di 4 di punti materiali\n";
   std::cin >> NoPM;
-  assert(NoPM > 0 &&
-         NoPM % 4 == 0);  // Number Of PM nella catena SOLO NUMERI PARI!!!! PER
-                          // LA FUNZIONE evolve DENTRO LA CLASSE CHAIN (nell'if)
+  assert(NoPM > 0 && NoPM % 4 == 0);
 
   std::cout << "Inserisci il raggio della configurazione inziale\n";
   std::cin >> r;
@@ -83,32 +80,45 @@ int main() {
   sf::Text string_steps;
   sf::Text string_NoPM;
   sf::Text string_k;
-//  sf::Text string_start;
+  sf::Text string_Kinetic_Energy;
+  sf::Text string_Potential_Energy;
+  sf::Text string_Total_Energy;
+
   string_NoPM.setFont(font);
   string_NoPM.setCharacterSize(40);
   string_NoPM.setFillColor(sf::Color::White);
-  string_NoPM.setPosition(300, -250);
+  string_NoPM.setPosition(400, -250);
 
   string_w.setFont(font);
   string_w.setCharacterSize(40);
   string_w.setFillColor(sf::Color::White);
-  string_w.setPosition(300, -300);
+  string_w.setPosition(400, -300);
 
   string_steps.setFont(font);
   string_steps.setCharacterSize(40);
   string_steps.setFillColor(sf::Color::White);
-  string_steps.setPosition(300, -350);
+  string_steps.setPosition(400, -350);
 
   string_k.setFont(font);
   string_k.setCharacterSize(40);
   string_k.setFillColor(sf::Color::White);
-  string_k.setPosition(300, -400);
-/*
-  string_start.setFont(font);
-  string_start.setCharacterSize(40);
-  string_start.setFillColor(sf::Color::White);
-  string_start.setPosition(-300, -300);
-*/
+  string_k.setPosition(400, -400);
+
+  string_Kinetic_Energy.setFont(font);
+  string_Kinetic_Energy.setCharacterSize(40);
+  string_Kinetic_Energy.setFillColor(sf::Color::White);
+  string_Kinetic_Energy.setPosition(-600, -350);
+
+  string_Potential_Energy.setFont(font);
+  string_Potential_Energy.setCharacterSize(40);
+  string_Potential_Energy.setFillColor(sf::Color::White);
+  string_Potential_Energy.setPosition(-600, -300);
+
+  string_Total_Energy.setFont(font);
+  string_Total_Energy.setCharacterSize(40);
+  string_Total_Energy.setFillColor(sf::Color::White);
+  string_Total_Energy.setPosition(-600, -250);
+
   sf::RenderWindow window(sf::VideoMode(display_width, display_height),
                           "Chain Evolution");
   window.setFramerateLimit(fps);
@@ -131,7 +141,7 @@ int main() {
   bool first = true;
 
   while (window.isOpen()) {
-    window.setKeyRepeatEnabled(false);
+   // window.setKeyRepeatEnabled(false);
     sf::Event event;
     while (window.pollEvent(event)) {
       if (event.type == sf::Event::Closed) window.close();
@@ -143,10 +153,6 @@ int main() {
       if (event.type == sf::Event::KeyPressed &&
           event.key.code == sf::Keyboard::Escape) {
         start = false;
-        /*
-        string_start.setString("Stopped");
-        window.draw(string_start);
-        */
       }
       if (event.type == sf::Event::KeyPressed &&
           event.key.code == sf::Keyboard::W)
@@ -163,7 +169,7 @@ int main() {
     }
 
     if (first) {  // disegno la condizione iniziale finche non premo invio
-      window.clear(sf::Color::Transparent);
+      window.clear(sf::Color::Black);
 
       string_k.setString("k is " + to_string_with_precision(k));
       window.draw(string_k);
@@ -177,10 +183,29 @@ int main() {
 
       string_steps.setString("W is " + to_string_with_precision(w));
       window.draw(string_steps);
-      /*
-            string_start.setString("Stopped");
-            window.draw(string_start);
-      */
+
+      auto Total_kinetic_energy =
+          std::accumulate(Kinetic_energies.begin(), Kinetic_energies.end(), 0) *
+          0.0001;
+      string_Kinetic_Energy.setString(
+          "Total kinetic energy is " +
+          to_string_with_precision(Total_kinetic_energy));
+      window.draw(string_Kinetic_Energy);
+
+      auto Total_Potential_energy =
+          std::accumulate(Potential_energies.begin(), Potential_energies.end(),
+                          0) *
+          0.0000001;
+      string_Potential_Energy.setString(
+          "Total potential energy is " +
+          to_string_with_precision(Total_Potential_energy));
+      window.draw(string_Potential_Energy);
+
+      auto Total_energy = Total_kinetic_energy + Total_Potential_energy;
+      string_Total_Energy.setString("Total energy is " +
+                                    to_string_with_precision(Total_energy));
+      window.draw(string_Total_Energy);
+
       for (long unsigned int i = 0; i < chain.size(); ++i) {
         chain[i].draw(window);
       }
@@ -191,7 +216,7 @@ int main() {
       window.display();
     }
     if (start) {
-      window.clear(sf::Color::Transparent);
+      window.clear(sf::Color::Black);
 
       string_NoPM.setString("k is " + to_string_with_precision(k));
       window.draw(string_k);
@@ -205,21 +230,34 @@ int main() {
 
       string_steps.setString("W is " + to_string_with_precision(w));
       window.draw(string_steps);
-      /*
-            string_start.setString("Started");
-            window.draw(string_start);
-      */
-      std::cout << "\nchiamo evolve nel main\n";
+
+      auto Total_kinetic_energy =
+          std::accumulate(Kinetic_energies.begin(), Kinetic_energies.end(), 0) *
+          0.0001;
+      string_Kinetic_Energy.setString(
+          "Total kinetic energy is " +
+          to_string_with_precision(Total_kinetic_energy));
+      window.draw(string_Kinetic_Energy);
+
+      auto Total_Potential_energy =
+          std::accumulate(Potential_energies.begin(), Potential_energies.end(),
+                          0) *
+          0.0000001;
+      string_Potential_Energy.setString(
+          "Total potential energy is " +
+          to_string_with_precision(Total_Potential_energy));
+      window.draw(string_Potential_Energy);
+
+      auto Total_energy = Total_kinetic_energy + Total_Potential_energy;
+      string_Total_Energy.setString("Total energy is " +
+                                    to_string_with_precision(Total_energy));
+      window.draw(string_Total_Energy);
 
       auto const state = evolve(chain, steps_per_evolution, delta_t);
 
-      std::cout << "\nInizio for del main per disegnare \n";
       for (long unsigned int i = 0; i < chain.size(); ++i) {
         chain[i].draw(window);
-        // std::cout<<"pos :"<< chain[i].get_pos() << "vel :" <<
-        // chain[i].get_vel() << '\n';
       }
-      std::cout << "Fuori for del main per disegnare \n";
 
       window.draw(x_axis, 2, sf::Lines);
       window.draw(y_axis, 2, sf::Lines);
