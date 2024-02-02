@@ -1,40 +1,30 @@
 #include "Chain.hpp"
 
 #include <cassert>
-//------------------------------------------------------- FREE FUNCTION
-//-------------------------------------------------------
+// --------------------- FREE FUNCTION ---------------------
 
 float w;
 bool anticlock = false;
-std::vector<double> Kinetic_energies;
-std::vector<double> Potential_energies;
+std::vector<float> Kinetic_energies;
+std::vector<float> Potential_energies;
 
-float d(PM pm1, PM pm2) {  // distanza tra due PM
-  vec v = pm1.get_pos() - pm2.get_pos();
-  return v.norm();
-}
+float d(PM pm1, PM pm2) { return (pm1.get_pos() - pm2.get_pos()).norm(); }
 
-vec x(PM pm1, PM pm2) {
-  return pm2.get_pos() - pm1.get_pos();
-}  // vettore che esce da pm1 e punta pm2: pm1=pm_j; pm2=pm_j+1 oppure pm_j-1
+vec x(PM pm1, PM pm2) { return pm2.get_pos() - pm1.get_pos(); }
 
-vec apply_hooke(PM const& pm1, PM const& pm2,
-                Hooke& hooke) {  // calcola la forza esercitata da pm2 su pm1
+vec apply_hooke(PM const& pm1, PM const& pm2, Hooke& hooke) {
   auto temp_x = x(pm1, pm2);
-  hooke.update_lv(
-      hooke.get_l() * temp_x /
-      temp_x.norm());  // x è il vettore che esce da PM1 e punta PM2, vedi dopo
+  hooke.update_lv(hooke.get_l() * temp_x / temp_x.norm());
   return hooke.get_k() * (temp_x - hooke.get_lv());
-}
+}  // calcola la forza elastica esercitata da pm2 su pm1
 
 vec apply_CF(PM const& pm1, float const& omega) {
   return vec(pm1.get_m() * omega * omega * pm1.get_pos().get_x(), 0);
-}  // ossia ritorna un vec con componente solo lungo x
+}
 
 vec apply_gravity(PM const& pm1) { return vec(0, -pm1.get_m() * 9.81); }
 
-//------------------------------------------------------- CHAIN MEMBER CLASS
-//-------------------------------------------------------
+// --------------------- CHAIN MEMBER CLASS ---------------------
 
 PM Chain::solve(PM pm, vec f, double const& delta_t) const {
   auto const a = f / pm.get_m();
@@ -43,8 +33,6 @@ PM Chain::solve(PM pm, vec f, double const& delta_t) const {
 
   return PM(x.get_x(), x.get_y(), v.get_x(), v.get_y(), pm.get_m());
 };
-
-bool Chain::empty() { return ch_.empty(); };
 
 std::size_t Chain::size() const { return ch_.size(); };
 
@@ -56,48 +44,39 @@ PM Chain::operator[](int i) { return ch_[i]; }
 
 void Chain::initial_config(float const& theta, float const& m, float const& r,
                            int const& NoPM) {
-  for (int i = 0; i != NoPM / 2;
-       ++i) {  // con questo ciclo for genero la configurazione iniziale della
-               // catena, assegnando la posizioni iniziali utilizzando funzioni
-               // di i
-    PM pm_temp(r * cos(theta * i), r * sin(theta * i), 0., 0.,
-               m);  // l'argomento di cos e sin sono in modo tale che i punti,
-                    // inizialmente, vengano disposti su una circonferenza
+  for (int i = 0; i != NoPM; ++i) {
+    // con questo ciclo genero i dei punti della catena e li dispongo su una
+    // circoneferenza, assegnando la posizioni iniziali utilizzando funzioni di
+    // i
+
+    PM pm_temp(r * cos(theta * i), r * sin(theta * i), 0., 0., m);
+    // l'argomento di cos e sin sono in modo tale che i punti vengano disposti
+    // su una circonferenza
+
     ch_.push_back(pm_temp);
     std::cout << "(" << pm_temp.get_pos().get_x() << ", "
               << pm_temp.get_pos().get_y() << ")" << '\n';
   };
 
-  PM pm_temp(-r, 0, 0, 0, m);
-  ch_.push_back(pm_temp);  // metto il polo ovest
-  std::cout << "(" << ch_[NoPM / 2].get_pos().get_x() << ", "
-            << ch_[NoPM / 2].get_pos().get_y() << ")" << '\n';
-
-  for (int i = NoPM / 2 + 1; i != NoPM; ++i) {
-    PM pm_tempp(r * cos(theta * i), r * sin(theta * i), 0, 0,
-                m);  // l'argomento di cos e sin sono in modo tale che i punti,
-                     // inizialmente, vengano disposti su una circonferenza
-    ch_.push_back(pm_tempp);
-    std::cout << "(" << pm_tempp.get_pos().get_x() << ", "
-              << pm_tempp.get_pos().get_y() << ")" << '\n';
-  }
-
   std::cout << "size of chain initially = " << ch_.size() << '\n';
 }
 
 void Chain::evolve(double const& dt) {
-  /*creo una copia della chain, poi calcolo l'evoluzione (ciclo for) e invece di
-   *fare *state_it = f(*state_it) faccio state_it = f(*state_it_copia)
-   */
+  // Creo una copia della chain, poi calcolo l'evoluzione passando la copia
+  // della catena
 
   Kinetic_energies.clear();
   Potential_energies.clear();
 
   std::vector<PM> ch_copy = ch_;
-  double Kinetic_energy;
-  double Potential_energy;
 
-  if (anticlock) {  // integra in senso antiorario
+  float Kinetic_energy;
+  // energia cinetica del singolo elemento
+  float Potential_energy;
+  // energia potenziale del singolo elemento
+
+  if (anticlock) {
+    // integra in senso antiorario
     anticlock = !anticlock;
 
     auto state_it = ch_.begin();
@@ -118,12 +97,13 @@ void Chain::evolve(double const& dt) {
       *state_it = solve(*state_it_copy, f + f_prev, dt);
 
       if (static_cast<long unsigned int>(
-              std::distance(ch_.begin(), state_it)) ==
-          ch_.size() / 4) {  // ri-aggiorno la x del polo nord
+              std::distance(ch_.begin(), state_it)) == ch_.size() / 4) {
+        // ri-aggiorno la x del polo nord
         (*state_it).update_x(0.);
-      } else if (static_cast<long unsigned int>(
-                     std::distance(ch_.begin(), state_it)) ==
-                 ch_.size() / 4 * 3) {  // ri-aggiorno la x del polo sud
+
+      } else if (static_cast<long unsigned int>(std::distance(
+                     ch_.begin(), state_it)) == ch_.size() / 4 * 3) {
+        // ri-aggiorno la x del polo sud
         (*state_it).update_x(0.);
       };
 

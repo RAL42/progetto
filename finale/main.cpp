@@ -3,22 +3,25 @@
 #include <sstream>
 
 #include "Chain.hpp"
+/*
+  Fonte della funzione std::string to_string_with_precision:
+  https://stackoverflow.com/questions/16605967/set-precision-of-stdto-string-when-converting-floating-point-values
+*/
 
 auto evolve(Chain &chain, int steps_per_evolution, sf::Time delta_t) {
+  // fa evolvere la chain ogni dt, i volte, fino a steps_per_evolution e
+  // restituisce quest'ultima evoluzione, che poi andrà stampanta a schermo
+  
   double const dt{delta_t.asSeconds()};
 
-  for (int i{0}; i != steps_per_evolution;
-       ++i) {  // fa evolvere la chain ogni dt, i volte, fino a
-               // steps_per_evolution e restituisce quest'ultima evoluzione
+  for (int i{0}; i != steps_per_evolution; ++i) {
     chain.evolve(dt);
   }
   return chain.state();
 }
 
-std::string to_string_with_precision(
-    const float a_value,
-    const int n =
-        1) {  // https://stackoverflow.com/questions/16605967/set-precision-of-stdto-string-when-converting-floating-point-values
+std::string to_string_with_precision(const float a_value, const int n = 1) {
+  // converte un float in string con n cifre decimali
   std::ostringstream out;
   out.precision(n);
   out << std::fixed << a_value;
@@ -27,9 +30,15 @@ std::string to_string_with_precision(
 
 int main() {
   float mass{};
+  // massa dei punti materiali
   float k{};
+  // costante elastica della molla
   int NoPM{};
-  float r{};  // radius of the rest position of the chain
+  // numero di elementi della catena
+  float r{};
+  // raggio della chain nella posizione iniziale
+
+  // chiedo in input i parametri principali
 
   std::cout << "Inserisci massa dei Punti Materiali \n";
   std::cin >> mass;
@@ -55,9 +64,12 @@ int main() {
     throw std::runtime_error{"Incorrect Input"};
   };
 
+  // calcola i vari parametri per la molla "hooke" e la "chain"
+
   float const theta{2 * pi / NoPM};
-  float const rest_length{
-      theta * r};  // rest length is when the chain is a circumference
+  float const rest_length{theta * r};
+  // la lunghezza a riposo è data dalla distanza dei punti nella condizione
+  // iniziale
 
   Hooke spring{k, rest_length};
 
@@ -73,6 +85,8 @@ int main() {
 
   unsigned const display_width = 0.85 * sf::VideoMode::getDesktopMode().width;
   unsigned const display_height = 0.85 * sf::VideoMode::getDesktopMode().height;
+
+  // crea le varie stringhe delle variabili da stampare a schermo
 
   sf::Font font;
   font.loadFromFile("./font/fresco_stamp.ttf");
@@ -107,30 +121,35 @@ int main() {
   string_Kinetic_Energy.setFont(font);
   string_Kinetic_Energy.setCharacterSize(40);
   string_Kinetic_Energy.setFillColor(sf::Color::White);
-  string_Kinetic_Energy.setPosition(-600, -350);
+  string_Kinetic_Energy.setPosition(-700, -350);
 
   string_Potential_Energy.setFont(font);
   string_Potential_Energy.setCharacterSize(40);
   string_Potential_Energy.setFillColor(sf::Color::White);
-  string_Potential_Energy.setPosition(-600, -300);
+  string_Potential_Energy.setPosition(-700, -300);
 
   string_Total_Energy.setFont(font);
   string_Total_Energy.setCharacterSize(40);
   string_Total_Energy.setFillColor(sf::Color::White);
-  string_Total_Energy.setPosition(-600, -250);
+  string_Total_Energy.setPosition(-700, -250);
 
   sf::RenderWindow window(sf::VideoMode(display_width, display_height),
                           "Chain Evolution");
+  // creo la finestra di SFML
   window.setFramerateLimit(fps);
   window.setPosition(sf::Vector2i(50, 50));
 
-  sf::Vector2f window_size(
-      window.getSize());  // getsize prende width e height della window
-  sf::View view{
-      sf::Vector2f{0, 0},
-      window_size};  // view permette di cambiare l'origine, il primo vettore è
-                     // l'origine, il secondo e la size della window
+  // cambio l'origine del sistema di riferimento
+
+  sf::Vector2f window_size(window.getSize());
+  // getsize prende width e height della window
+
+  sf::View view{sf::Vector2f{0, 0}, window_size};
   window.setView(view);
+  // view permette di cambiare l'origine, il primo vettore è l'origine, il
+  // secondo e la size della window
+
+  // creo gli assi cartesiani
 
   sf::Vertex x_axis[] = {sf::Vertex(sf::Vector2f(-window_size.x, 0)),
                          sf::Vertex(sf::Vector2f(window_size.x, 0))};
@@ -138,12 +157,18 @@ int main() {
                          sf::Vertex(sf::Vector2f(0, window_size.y / 2))};
 
   bool start = false;
+  // per far partire l'evoluzione
   bool first = true;
+  // per far stampare a schermo la condizione iniziale
 
   while (window.isOpen()) {
-   // window.setKeyRepeatEnabled(false);
+    window.setKeyRepeatEnabled(true);
+    // permette di "ripremere" il pulsante tenendolo premuto
+
     sf::Event event;
     while (window.pollEvent(event)) {
+      // comandi per variare alcune grandezze in real-time
+
       if (event.type == sf::Event::Closed) window.close();
       if (event.type == sf::Event::KeyPressed &&
           event.key.code == sf::Keyboard::Enter) {
@@ -168,7 +193,10 @@ int main() {
         --steps_per_evolution;
     }
 
-    if (first) {  // disegno la condizione iniziale finche non premo invio
+    if (first) {
+      // disegno la condizione iniziale e le varie stringhe finche non premo
+      // invio
+
       window.clear(sf::Color::Black);
 
       string_k.setString("k is " + to_string_with_precision(k));
@@ -184,9 +212,11 @@ int main() {
       string_steps.setString("W is " + to_string_with_precision(w));
       window.draw(string_steps);
 
+      // calcolo le varie energie, le riscalo, e poi le stampo a schermo
+
       auto Total_kinetic_energy =
           std::accumulate(Kinetic_energies.begin(), Kinetic_energies.end(), 0) *
-          0.0001;
+          0.001;
       string_Kinetic_Energy.setString(
           "Total kinetic energy is " +
           to_string_with_precision(Total_kinetic_energy));
@@ -195,7 +225,7 @@ int main() {
       auto Total_Potential_energy =
           std::accumulate(Potential_energies.begin(), Potential_energies.end(),
                           0) *
-          0.0000001;
+          0.00001;
       string_Potential_Energy.setString(
           "Total potential energy is " +
           to_string_with_precision(Total_Potential_energy));
@@ -216,6 +246,7 @@ int main() {
       window.display();
     }
     if (start) {
+      // se premo invio parte la simulazione
       window.clear(sf::Color::Black);
 
       string_NoPM.setString("k is " + to_string_with_precision(k));
@@ -233,7 +264,7 @@ int main() {
 
       auto Total_kinetic_energy =
           std::accumulate(Kinetic_energies.begin(), Kinetic_energies.end(), 0) *
-          0.0001;
+          0.001;
       string_Kinetic_Energy.setString(
           "Total kinetic energy is " +
           to_string_with_precision(Total_kinetic_energy));
@@ -242,7 +273,7 @@ int main() {
       auto Total_Potential_energy =
           std::accumulate(Potential_energies.begin(), Potential_energies.end(),
                           0) *
-          0.0000001;
+          0.00001;
       string_Potential_Energy.setString(
           "Total potential energy is " +
           to_string_with_precision(Total_Potential_energy));
@@ -254,6 +285,8 @@ int main() {
       window.draw(string_Total_Energy);
 
       auto const state = evolve(chain, steps_per_evolution, delta_t);
+      // calcola l'evoluzione della chain e restituisce la chain evoluta dopo
+      // steps_per_evolution
 
       for (long unsigned int i = 0; i < chain.size(); ++i) {
         chain[i].draw(window);
