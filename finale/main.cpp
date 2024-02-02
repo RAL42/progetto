@@ -83,14 +83,10 @@ int main() {
   sf::Text string_steps;
   sf::Text string_NoPM;
   sf::Text string_k;
-  string_k.setFont(font);
-  string_k.setCharacterSize(40);
-  string_k.setFillColor(sf::Color::Magenta);
-  string_k.setPosition(300, -400);
-
+//  sf::Text string_start;
   string_NoPM.setFont(font);
   string_NoPM.setCharacterSize(40);
-  string_NoPM.setFillColor(sf::Color::Magenta);
+  string_NoPM.setFillColor(sf::Color::White);
   string_NoPM.setPosition(300, -250);
 
   string_w.setFont(font);
@@ -100,9 +96,19 @@ int main() {
 
   string_steps.setFont(font);
   string_steps.setCharacterSize(40);
-  string_steps.setFillColor(sf::Color::Magenta);
+  string_steps.setFillColor(sf::Color::White);
   string_steps.setPosition(300, -350);
 
+  string_k.setFont(font);
+  string_k.setCharacterSize(40);
+  string_k.setFillColor(sf::Color::White);
+  string_k.setPosition(300, -400);
+/*
+  string_start.setFont(font);
+  string_start.setCharacterSize(40);
+  string_start.setFillColor(sf::Color::White);
+  string_start.setPosition(-300, -300);
+*/
   sf::RenderWindow window(sf::VideoMode(display_width, display_height),
                           "Chain Evolution");
   window.setFramerateLimit(fps);
@@ -125,26 +131,39 @@ int main() {
   bool first = true;
 
   while (window.isOpen()) {
+    window.setKeyRepeatEnabled(false);
     sf::Event event;
     while (window.pollEvent(event)) {
       if (event.type == sf::Event::Closed) window.close();
-      if (sf::Keyboard::isKeyPressed(sf::Keyboard::Enter)) {
+      if (event.type == sf::Event::KeyPressed &&
+          event.key.code == sf::Keyboard::Enter) {
         start = true;
         first = false;
-        std::cout << start << '\n';
       }
-      if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)) {
+      if (event.type == sf::Event::KeyPressed &&
+          event.key.code == sf::Keyboard::Escape) {
         start = false;
-        std::cout << start << '\n';
+        /*
+        string_start.setString("Stopped");
+        window.draw(string_start);
+        */
       }
-      if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) ++w;
-      if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) --w;
-      if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) ++steps_per_evolution;
-      if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) --steps_per_evolution;
+      if (event.type == sf::Event::KeyPressed &&
+          event.key.code == sf::Keyboard::W)
+        ++w;
+      if (event.type == sf::Event::KeyPressed &&
+          event.key.code == sf::Keyboard::S)
+        --w;
+      if (event.type == sf::Event::KeyPressed &&
+          event.key.code == sf::Keyboard::D)
+        ++steps_per_evolution;
+      if (event.type == sf::Event::KeyPressed &&
+          event.key.code == sf::Keyboard::A && steps_per_evolution != 0)
+        --steps_per_evolution;
     }
 
     if (first) {  // disegno la condizione iniziale finche non premo invio
-      window.clear(sf::Color::Black);
+      window.clear(sf::Color::Transparent);
 
       string_k.setString("k is " + to_string_with_precision(k));
       window.draw(string_k);
@@ -158,11 +177,12 @@ int main() {
 
       string_steps.setString("W is " + to_string_with_precision(w));
       window.draw(string_steps);
-
+      /*
+            string_start.setString("Stopped");
+            window.draw(string_start);
+      */
       for (long unsigned int i = 0; i < chain.size(); ++i) {
         chain[i].draw(window);
-        // std::cout<<"pos :"<< chain[i].get_pos() << "vel :" <<
-        // chain[i].get_vel() << '\n';
       }
 
       window.draw(x_axis, 2, sf::Lines);
@@ -171,7 +191,7 @@ int main() {
       window.display();
     }
     if (start) {
-      window.clear(sf::Color::Black);
+      window.clear(sf::Color::Transparent);
 
       string_NoPM.setString("k is " + to_string_with_precision(k));
       window.draw(string_k);
@@ -185,7 +205,10 @@ int main() {
 
       string_steps.setString("W is " + to_string_with_precision(w));
       window.draw(string_steps);
-
+      /*
+            string_start.setString("Started");
+            window.draw(string_start);
+      */
       std::cout << "\nchiamo evolve nel main\n";
 
       auto const state = evolve(chain, steps_per_evolution, delta_t);

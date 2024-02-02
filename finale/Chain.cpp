@@ -152,9 +152,7 @@ void Chain::evolve(double const& dt) {
     */
 
     std::cout << "\nInizio for dei calcoli \n";
-    bool first = true;
-    bool second = true;
-    bool third = true;
+
     for (; state_it != state_last;
          ++state_it, ++state_it_next, ++state_it_copy, ++state_it_next_copy) {
       // std::cout<<"\npos_copy: "<< (*state_it_copy).get_pos() << '\n';
@@ -170,39 +168,16 @@ void Chain::evolve(double const& dt) {
               apply_CF(*state_it_copy, w);
       *state_it = solve(*state_it_copy, f + f_prev, dt);
 
-      if(first){
-        first = false;
-          std::cout<< "\n  x(it, next) = " << x(*state_it_copy, *state_it_next_copy) << '\n';
-          std::cout<<"  f_hooke data dal secondo sul primo  " << apply_hooke(*state_it_copy, *state_it_next_copy, hooke_) << '\n';
-          std::cout<<"  f_cf del primo  " << apply_CF(*state_it_copy, w) << '\n';
-          std::cout<<"  f_prev data dall'ultimo sul primo " << f_prev << '\n';
-          std::cout<<"  f + f_prev = " << f + f_prev << '\n';
-      } else if(second){
-        second = false;
-          std::cout<< "\n  x(it, next) = " << x(*state_it_copy, *state_it_next_copy) << '\n';
-          std::cout<<"  f_hooke data dal terzo sul secondo  " << apply_hooke(*state_it_copy, *state_it_next_copy, hooke_) << '\n';
-          std::cout<<"  f_cf del secondo  " << apply_CF(*state_it_copy, w) << '\n';
-          std::cout<<"  f_prev data dal primo sul secondo " << f_prev << '\n';
-          std::cout<<"  f + f_prev = " << f + f_prev << '\n'; 
-      } else if(third){
-        third = false;
-          std::cout<< "\n  x(it, next) = " << x(*state_it_copy, *state_it_next_copy) << '\n';
-          std::cout<<"  f_hooke data dal quarto sul terzo  " << apply_hooke(*state_it_copy, *state_it_next_copy, hooke_) << '\n';
-          std::cout<<"  f_cf del terzo  " << apply_CF(*state_it_copy, w) << '\n';
-          std::cout<<"  f_prev data dal secondo sul terzo " << f_prev << '\n';
-          std::cout<<"  f + f_prev = " << f + f_prev << '\n';
-        
-      }
-
-
-      if (std::distance(ch_.begin(), state_it) ==
+/*      if (std::distance(ch_.begin(), state_it) ==
           0) {  // ri-aggiorno la y del polo est (a dx)
         (*state_it).update_y(0.);
       } else if (static_cast<long unsigned int>(
                      std::distance(ch_.begin(), state_it)) ==
                  ch_.size() / 2) {  // ri-aggiorno la y del polo ovest (a sx)
         (*state_it).update_y(0.);
-      } else if (static_cast<long unsigned int>(
+      } else
+      */
+       if (static_cast<long unsigned int>(
                      std::distance(ch_.begin(), state_it)) ==
                  ch_.size() / 4) {  // ri-aggiorno la x del polo nord
         (*state_it).update_x(0.);
@@ -273,20 +248,15 @@ void Chain::evolve(double const& dt) {
               apply_CF(*state_it_copy, w);
       *state_it = solve(*state_it_copy, f + f_prev, dt);
 
-      if (std::distance(ch_.begin(), state_it) ==
-          0) {  // ri-aggiorno la y del polo est (a dx)
+     /* if (std::distance(ch_.begin(), state_it) == 0) {  // ri-aggiorno la y del polo est (a dx)
         (*state_it).update_y(0.);
-      } else if (static_cast<long unsigned int>(
-                     std::distance(ch_.begin(), state_it)) ==
-                 ch_.size() / 2) {  // ri-aggiorno la y del polo ovest (a sx)
+      } else if (static_cast<long unsigned int>(std::distance(ch_.begin(), state_it)) == ch_.size() / 2) {  // ri-aggiorno la y del polo ovest (a sx)
         (*state_it).update_y(0.);
-      } else if (static_cast<long unsigned int>(
-                     std::distance(ch_.begin(), state_it)) ==
-                 ch_.size() / 4) {  // ri-aggiorno la x del polo nord
+      } else 
+      */
+     if (static_cast<long unsigned int>(std::distance(ch_.begin(), state_it)) == ch_.size() / 4) {  // ri-aggiorno la x del polo nord
         (*state_it).update_x(0.);
-      } else if (static_cast<long unsigned int>(
-                     std::distance(ch_.begin(), state_it)) ==
-                 ch_.size() / 4 * 3) {  // ri-aggiorno la x del polo sud
+      } else if (static_cast<long unsigned int>(std::distance(ch_.begin(), state_it)) == ch_.size() / 4 * 3) {  // ri-aggiorno la x del polo sud
         (*state_it).update_x(0.);
       }
 
