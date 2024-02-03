@@ -19,23 +19,24 @@ class vec {
   // restituisce v_
 
   // overload degli operatori
-
   vec &operator+=(vec const &);
   vec &operator-=(vec const &);
   vec &operator*=(float const &);
   vec &operator/=(float const &);
 
-  // funzioni membro che restituiscono e aggiornano i parametri di v_
-
   float get_x() const;
+  // restituisce la componente x
   float get_y() const;
+  // restituisce la componente y
   float norm() const;
+  // calcola la norma del vettore
   void update_x(float const &);
+  // aggiorna la componente x
   void update_y(float const &);
+  // aggiorna la componente y
 };
 
 // overload degli operatori
-
 std::ostream &operator<<(std::ostream &, vec const &);
 vec operator+(vec const &, vec const &);
 vec operator-(vec const &, vec const &);

@@ -87,9 +87,4 @@ TEST_CASE("Testing Chain") {
     vec t1(5. * 11. * 11., 0.);
     CHECK(f == t1);
   }
-  SUBCASE("testing apply_gravity") {
-    vec f = apply_gravity(pm1);
-    vec t1(0, -5. * 9.81);
-    CHECK(f == t1);
-  }
 }

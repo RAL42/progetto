@@ -5,6 +5,7 @@
 
 class Hooke {
   const float k_;
+  // costante elastica
   const float l_;
   // lunghezza a riposo scalare
   vec lv_;
@@ -21,16 +22,19 @@ class Hooke {
   }  // parametrized constructor
 
   Hooke() : k_{}, l_{} {};
-  // default constructor. Ho dovuto inizializzare esplicitamente k_ e l_ perché
-  // sono const
+  // default constructor
 
   float get_k() const;
-  vec get_lv() const;  
+  // restituisce la costante elastica
+  vec get_lv() const;
+  // restituisce la lunghezza a riposo vettoriale
   float get_l() const;
+  // restituisce la lunghezza a riposo
   void update_lv(vec const &);
+  // aggiorna la lunghezza a riposo vettoriale
 };
 
 bool operator==(Hooke const &, Hooke const &);
-// per i test
+// true se k_ e l_ sono uguali
 
 #endif

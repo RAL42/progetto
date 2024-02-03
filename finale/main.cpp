@@ -11,7 +11,7 @@
 auto evolve(Chain &chain, int steps_per_evolution, sf::Time delta_t) {
   // fa evolvere la chain ogni dt, i volte, fino a steps_per_evolution e
   // restituisce quest'ultima evoluzione, che poi andrà stampanta a schermo
-  
+
   double const dt{delta_t.asSeconds()};
 
   for (int i{0}; i != steps_per_evolution; ++i) {
@@ -34,12 +34,11 @@ int main() {
   float k{};
   // costante elastica della molla
   int NoPM{};
-  // numero di elementi della catena
+  // numero di elementi della chain
   float r{};
   // raggio della chain nella posizione iniziale
 
   // chiedo in input i parametri principali
-
   std::cout << "Inserisci massa dei Punti Materiali \n";
   std::cin >> mass;
   assert(mass > 0.);
@@ -65,7 +64,6 @@ int main() {
   };
 
   // calcola i vari parametri per la molla "hooke" e la "chain"
-
   float const theta{2 * pi / NoPM};
   float const rest_length{theta * r};
   // la lunghezza a riposo è data dalla distanza dei punti nella condizione
@@ -82,12 +80,12 @@ int main() {
   auto const delta_t{sf::milliseconds(1)};
   int const fps{60};
   int steps_per_evolution{120 / fps};
+  // parametro che permette di disegnare la chain dopo un tot di steps
 
   unsigned const display_width = 0.85 * sf::VideoMode::getDesktopMode().width;
   unsigned const display_height = 0.85 * sf::VideoMode::getDesktopMode().height;
 
   // crea le varie stringhe delle variabili da stampare a schermo
-
   sf::Font font;
   font.loadFromFile("./font/fresco_stamp.ttf");
   sf::Text string_w;
@@ -139,18 +137,15 @@ int main() {
   window.setFramerateLimit(fps);
   window.setPosition(sf::Vector2i(50, 50));
 
-  // cambio l'origine del sistema di riferimento
-
   sf::Vector2f window_size(window.getSize());
   // getsize prende width e height della window
 
   sf::View view{sf::Vector2f{0, 0}, window_size};
   window.setView(view);
-  // view permette di cambiare l'origine, il primo vettore è l'origine, il
-  // secondo e la size della window
+  // sf::View permette di cambiare l'origine del sistema di riferimento, il
+  // primo vettore è l'origine, il secondo è la size della window
 
   // creo gli assi cartesiani
-
   sf::Vertex x_axis[] = {sf::Vertex(sf::Vector2f(-window_size.x, 0)),
                          sf::Vertex(sf::Vector2f(window_size.x, 0))};
   sf::Vertex y_axis[] = {sf::Vertex(sf::Vector2f(0, -window_size.y / 2)),
@@ -213,7 +208,6 @@ int main() {
       window.draw(string_steps);
 
       // calcolo le varie energie, le riscalo, e poi le stampo a schermo
-
       auto Total_kinetic_energy =
           std::accumulate(Kinetic_energies.begin(), Kinetic_energies.end(), 0) *
           0.001;
@@ -299,12 +293,3 @@ int main() {
     }
   }
 }
-
-/*
-NOTA: non c'è bisogno di tenere traccia del tempo. Lo scorrere del tempo è
-scandito dagli step che faccio nel programma, cioè io faccio partire il
-programma e lui fa partire una prima iterazione chiamando la funzione evolve()
-che calcola il nuovo stato della catena (e lo assegna a "state", riga 84), e
-stampa a schermo le posizioni dei PM della Chain ogni tot volte, ossia ogni
-"steps_per_evolution" e poi ripete, richiamando la funzione evolve()
-*/
