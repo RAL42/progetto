@@ -10,7 +10,7 @@
 
 auto evolve(Chain &chain, int steps_per_evolution, sf::Time delta_t) {
   // fa evolvere la chain ogni dt, i volte, fino a steps_per_evolution e
-  // restituisce quest'ultima evoluzione, che poi andrà stampanta a schermo
+  // restituisce quest'ultima evoluzione, che poi andrà stampata a schermo
 
   double const dt{delta_t.asSeconds()};
 
@@ -210,7 +210,7 @@ int main() {
       // calcolo le varie energie, le riscalo, e poi le stampo a schermo
       auto Total_kinetic_energy =
           std::accumulate(Kinetic_energies.begin(), Kinetic_energies.end(), 0) *
-          0.001;
+          0.00001;
       string_Kinetic_Energy.setString(
           "Total kinetic energy is " +
           to_string_with_precision(Total_kinetic_energy));
@@ -219,7 +219,7 @@ int main() {
       auto Total_Potential_energy =
           std::accumulate(Potential_energies.begin(), Potential_energies.end(),
                           0) *
-          0.00001;
+          0.0000001;
       string_Potential_Energy.setString(
           "Total potential energy is " +
           to_string_with_precision(Total_Potential_energy));
@@ -258,7 +258,7 @@ int main() {
 
       auto Total_kinetic_energy =
           std::accumulate(Kinetic_energies.begin(), Kinetic_energies.end(), 0) *
-          0.001;
+          0.00001;
       string_Kinetic_Energy.setString(
           "Total kinetic energy is " +
           to_string_with_precision(Total_kinetic_energy));
@@ -267,7 +267,7 @@ int main() {
       auto Total_Potential_energy =
           std::accumulate(Potential_energies.begin(), Potential_energies.end(),
                           0) *
-          0.00001;
+          0.0000001;
       string_Potential_Energy.setString(
           "Total potential energy is " +
           to_string_with_precision(Total_Potential_energy));
