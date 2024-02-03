@@ -1,4 +1,4 @@
-#include "Vec.hpp"
+#include "vec.hpp"
 
 sf::Vector2f vec::state() const { return v_; };
 

@@ -1,4 +1,4 @@
-#include "Chain.hpp"
+#include "chain.hpp"
 
 #include <cassert>
 // --------------------- FREE FUNCTION ---------------------

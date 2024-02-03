@@ -1,6 +1,6 @@
 #ifndef PM_HPP
 #define PM_HPP
-#include "Vec.hpp"
+#include "vec.hpp"
 
 class PM {  // Punto Materiale
   vec pos_;

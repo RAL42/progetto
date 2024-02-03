@@ -1,4 +1,4 @@
-#include "Hooke.hpp"
+#include "hooke.hpp"
 
 float Hooke::get_k() const { return k_; };
 

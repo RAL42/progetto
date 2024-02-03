@@ -3,8 +3,8 @@
 
 #include <iostream>
 
-#include "Hooke.hpp"
-#include "Pm.hpp"
+#include "hooke.hpp"
+#include "pm.hpp"
 
 //--------------------- FREE FUNCTION ---------------------
 

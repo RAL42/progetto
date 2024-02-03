@@ -1,5 +1,5 @@
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
-#include "Chain.hpp"
+#include "chain.hpp"
 #include "doctest.h"
 
 TEST_CASE("Testing vec") {

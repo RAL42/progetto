@@ -2,7 +2,7 @@
 #include <numeric>
 #include <sstream>
 
-#include "Chain.hpp"
+#include "chain.hpp"
 /*
   Fonte della funzione std::string to_string_with_precision:
   https://stackoverflow.com/questions/16605967/set-precision-of-stdto-string-when-converting-floating-point-values

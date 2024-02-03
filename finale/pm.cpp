@@ -1,4 +1,4 @@
-#include "Pm.hpp"
+#include "pm.hpp"
 
 bool PM::operator==(PM const &pm1) { return pos_ == pm1.get_pos(); }
 

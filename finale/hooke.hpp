@@ -1,7 +1,7 @@
 #ifndef HOOKE_HPP
 #define HOOKE_HPP
 
-#include "Vec.hpp"
+#include "vec.hpp"
 
 class Hooke {
   const float k_;
