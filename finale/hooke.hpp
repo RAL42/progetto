@@ -4,15 +4,15 @@
 #include "vec.hpp"
 
 class Hooke {
-  const float k_;
+  const double k_;
   // costante elastica
-  const float l_;
+  const double l_;
   // lunghezza a riposo scalare
   vec lv_;
   // lunghezza a riposo "vettoriale" per i calcoli della forza elastica
 
  public:
-  Hooke(const float k, const float l) : k_(k), l_(l) {
+  Hooke(const double k, const double l) : k_(k), l_(l) {
     if (k_ <= 0.) {
       throw std::runtime_error{"La costante elastica deve essere >0"};
     }
@@ -21,20 +21,17 @@ class Hooke {
     }
   }  // parametrized constructor
 
-  Hooke() : k_{}, l_{} {};
-  // default constructor
+  bool operator==(Hooke const &);
+  // true se k_ e l_ sono uguali
 
-  float get_k() const;
+  double get_k() const;
   // restituisce la costante elastica
   vec get_lv() const;
   // restituisce la lunghezza a riposo vettoriale
-  float get_l() const;
+  double get_l() const;
   // restituisce la lunghezza a riposo
   void update_lv(vec const &);
   // aggiorna la lunghezza a riposo vettoriale
 };
-
-bool operator==(Hooke const &, Hooke const &);
-// true se k_ e l_ sono uguali
 
 #endif

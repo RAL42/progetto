@@ -61,6 +61,11 @@ TEST_CASE("Testing Chain") {
   PM pm1{1., 2., 3., 4., 5.};
   PM pm2{10., 11., 12., 13., 14.};
 
+  SUBCASE("testing kinetic energies") {
+    Chain chain(Hooke(1., 2.), 1., 200, 8);
+    CHECK(chain.kin_energy() == 0.);
+  };
+
   SUBCASE("testing distance") {
     CHECK(d(pm1, pm2) == doctest::Approx(sqrt(2) * 9));
     CHECK(d(pm1, pm2) == d(pm2, pm1));
@@ -82,7 +87,7 @@ TEST_CASE("Testing Chain") {
     CHECK(f == t1);
   }
   SUBCASE("testing apply_CF") {
-    float w{11};
+    double w{11.};
     vec f = apply_CF(pm1, w);
     vec t1(5. * 11. * 11., 0.);
     CHECK(f == t1);

@@ -3,36 +3,35 @@
 
 #include <SFML/Graphics.hpp>
 #include <cmath>
-
 // spazio vettoriale su SFML
 
 class vec {
-  sf::Vector2f v_;
+  sf::Vector2<double> v_;
 
  public:
-  vec(float x, float y) : v_{x, y} {};
+  vec(double x, double y) : v_{x, y} {};
   // parametrized constructor
   vec() = default;
   // default constructor
 
-  sf::Vector2f state() const;
+  sf::Vector2<double> state() const;
   // restituisce v_
 
   // overload degli operatori
   vec &operator+=(vec const &);
   vec &operator-=(vec const &);
-  vec &operator*=(float const &);
-  vec &operator/=(float const &);
+  vec &operator*=(double const);
+  vec &operator/=(double const);
 
-  float get_x() const;
+  double get_x() const;
   // restituisce la componente x
-  float get_y() const;
+  double get_y() const;
   // restituisce la componente y
-  float norm() const;
+  double norm() const;
   // calcola la norma del vettore
-  void update_x(float const &);
+  void update_x(double const);
   // aggiorna la componente x
-  void update_y(float const &);
+  void update_y(double const);
   // aggiorna la componente y
 };
 
@@ -40,9 +39,9 @@ class vec {
 std::ostream &operator<<(std::ostream &, vec const &);
 vec operator+(vec const &, vec const &);
 vec operator-(vec const &, vec const &);
-vec operator*(vec const &, float const &);
-vec operator*(float const &, vec const &);
-vec operator/(vec const &, float const &);
+vec operator*(vec const &, double const);
+vec operator*(double const, vec const &);
+vec operator/(vec const &, double const);
 bool operator==(vec const &, vec const &);
 
 #endif

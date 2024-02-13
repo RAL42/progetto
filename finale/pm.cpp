@@ -7,10 +7,10 @@ void PM::draw(sf::RenderWindow &wind) {
   wind.draw(s);
 }
 
-float PM::get_m() const { return m_; };
+double PM::get_m() const { return m_; }
 
-void PM::update_x(float const &z) { pos_.update_x(z); };
-void PM::update_y(float const &z) { pos_.update_y(z); };
+void PM::update_x(double const z) { pos_.update_x(z); }
+void PM::update_y(double const z) { pos_.update_y(z); }
 
 vec PM::get_pos() const { return pos_; }
 vec PM::get_vel() const { return vel_; }

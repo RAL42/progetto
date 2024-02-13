@@ -1,13 +1,13 @@
 #include "hooke.hpp"
 
-float Hooke::get_k() const { return k_; };
+double Hooke::get_k() const { return k_; }
 
-vec Hooke::get_lv() const { return lv_; };
+vec Hooke::get_lv() const { return lv_; }
 
-float Hooke::get_l() const { return l_; };
+double Hooke::get_l() const { return l_; }
 
-void Hooke::update_lv(vec const& lv) { lv_ = lv; };
+void Hooke::update_lv(vec const& lv) { lv_ = lv; }
 
-bool operator==(Hooke const& k1, Hooke const& k2) {
-  return k1.get_k() == k2.get_k() && k1.get_l() == k2.get_l();
+bool Hooke::operator==(Hooke const& k1) {
+  return k_ == k1.get_k() && l_ == k1.get_l();
 }

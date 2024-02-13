@@ -5,23 +5,24 @@
 #include "chain.hpp"
 /*
   Fonte della funzione std::string to_string_with_precision:
-  https://stackoverflow.com/questions/16605967/set-precision-of-stdto-string-when-converting-floating-point-values
+  https://stackoverflow.com/questions/16605967/set-precision-of-stdto-string-when-converting-doubleing-point-values
 */
 
-auto evolve(Chain &chain, int steps_per_evolution, sf::Time delta_t) {
+auto evolve(Chain& chain, int steps_per_evolution, sf::Time delta_t,
+            double const w) {
   // fa evolvere la chain ogni dt, i volte, fino a steps_per_evolution e
   // restituisce quest'ultima evoluzione, che poi andrà stampata a schermo
 
   double const dt{delta_t.asSeconds()};
 
   for (int i{0}; i != steps_per_evolution; ++i) {
-    chain.evolve(dt);
+    chain.evolve(dt, w);
   }
   return chain.state();
 }
 
-std::string to_string_with_precision(const float a_value, const int n = 1) {
-  // converte un float in string con n cifre decimali
+std::string to_string_with_precision(const double a_value, const int n = 1) {
+  // converte un double in string con n cifre decimali
   std::ostringstream out;
   out.precision(n);
   out << std::fixed << a_value;
@@ -29,19 +30,22 @@ std::string to_string_with_precision(const float a_value, const int n = 1) {
 }
 
 int main() {
-  float mass{};
+  double mass{};
   // massa dei punti materiali
-  float k{};
+  double k{};
   // costante elastica della molla
   int NoPM{};
   // numero di elementi della chain
-  float r{};
+  double r{};
   // raggio della chain nella posizione iniziale
+  double w{};
 
   // chiedo in input i parametri principali
   std::cout << "Inserisci massa dei Punti Materiali \n";
   std::cin >> mass;
-  assert(mass > 0.);
+  if (std::cin.fail()) {
+    throw std::runtime_error{"Incorrect Input"};
+  };
 
   std::cout << "Inserisci la costante elastica k\n";
   std::cin >> k;
@@ -51,11 +55,15 @@ int main() {
 
   std::cout << "Inserisci un numero multiplo di 4 di punti materiali\n";
   std::cin >> NoPM;
-  assert(NoPM > 0 && NoPM % 4 == 0);
+  if (std::cin.fail()) {
+    throw std::runtime_error{"Incorrect Input"};
+  };
 
   std::cout << "Inserisci il raggio della configurazione inziale\n";
   std::cin >> r;
-  assert(r > 0.);
+  if (std::cin.fail()) {
+    throw std::runtime_error{"Incorrect Input"};
+  };
 
   std::cout << "Inserisci la velocità angolare \n";
   std::cin >> w;
@@ -64,18 +72,18 @@ int main() {
   };
 
   // calcola i vari parametri per la molla "hooke" e la "chain"
-  float const theta{2 * pi / NoPM};
-  float const rest_length{theta * r};
+
+  double const rest_length = sqrt(2 * r * r * (1 - cos(2 * M_PI / NoPM)));
   // la lunghezza a riposo è data dalla distanza dei punti nella condizione
   // iniziale
 
   Hooke spring{k, rest_length};
 
-  Chain chain{spring};
-  chain.initial_config(theta, mass, r, NoPM);
+  Chain chain{spring, mass, r, NoPM};
 
   std::cout << "m=" << mass << " k=" << k << " NoPM=" << NoPM << " w=" << w
             << '\n';
+  std::cout << "lunghezza a riposo : " << rest_length << '\n';
 
   auto const delta_t{sf::milliseconds(1)};
   int const fps{60};
@@ -208,29 +216,26 @@ int main() {
       window.draw(string_steps);
 
       // calcolo le varie energie, le riscalo, e poi le stampo a schermo
-      auto Total_kinetic_energy =
-          std::accumulate(Kinetic_energies.begin(), Kinetic_energies.end(), 0) *
-          0.00001;
+      double Total_Kinetic_Energy{};
+      Total_Kinetic_Energy = chain.kin_energy() * .000001;
       string_Kinetic_Energy.setString(
           "Total kinetic energy is " +
-          to_string_with_precision(Total_kinetic_energy));
+          to_string_with_precision(Total_Kinetic_Energy));
       window.draw(string_Kinetic_Energy);
 
-      auto Total_Potential_energy =
-          std::accumulate(Potential_energies.begin(), Potential_energies.end(),
-                          0) *
-          0.0000001;
+      double Total_Potential_Energy{};
+      Total_Potential_Energy = chain.pot_energy() * .000001;
       string_Potential_Energy.setString(
           "Total potential energy is " +
-          to_string_with_precision(Total_Potential_energy));
+          to_string_with_precision(Total_Potential_Energy));
       window.draw(string_Potential_Energy);
 
-      auto Total_energy = Total_kinetic_energy + Total_Potential_energy;
+      auto Total_energy = Total_Kinetic_Energy + Total_Potential_Energy;
       string_Total_Energy.setString("Total energy is " +
                                     to_string_with_precision(Total_energy));
       window.draw(string_Total_Energy);
 
-      for (long unsigned int i = 0; i < chain.size(); ++i) {
+      for (size_t i = 0; i != chain.size(); ++i) {
         chain[i].draw(window);
       }
 
@@ -256,33 +261,31 @@ int main() {
       string_steps.setString("W is " + to_string_with_precision(w));
       window.draw(string_steps);
 
-      auto Total_kinetic_energy =
-          std::accumulate(Kinetic_energies.begin(), Kinetic_energies.end(), 0) *
-          0.00001;
+      // calcolo le varie energie, le riscalo, e poi le stampo a schermo
+      double Total_Kinetic_Energy{};
+      Total_Kinetic_Energy = chain.kin_energy() * .000001;
       string_Kinetic_Energy.setString(
           "Total kinetic energy is " +
-          to_string_with_precision(Total_kinetic_energy));
+          to_string_with_precision(Total_Kinetic_Energy));
       window.draw(string_Kinetic_Energy);
 
-      auto Total_Potential_energy =
-          std::accumulate(Potential_energies.begin(), Potential_energies.end(),
-                          0) *
-          0.0000001;
+      double Total_Potential_Energy{};
+      Total_Potential_Energy = chain.pot_energy() * .000001;
       string_Potential_Energy.setString(
           "Total potential energy is " +
-          to_string_with_precision(Total_Potential_energy));
+          to_string_with_precision(Total_Potential_Energy));
       window.draw(string_Potential_Energy);
 
-      auto Total_energy = Total_kinetic_energy + Total_Potential_energy;
+      auto Total_energy = Total_Kinetic_Energy + Total_Potential_Energy;
       string_Total_Energy.setString("Total energy is " +
                                     to_string_with_precision(Total_energy));
       window.draw(string_Total_Energy);
 
-      auto const state = evolve(chain, steps_per_evolution, delta_t);
+      auto const state = evolve(chain, steps_per_evolution, delta_t, w);
       // calcola l'evoluzione della chain e restituisce la chain evoluta dopo
       // steps_per_evolution
 
-      for (long unsigned int i = 0; i < chain.size(); ++i) {
+      for (size_t i = 0; i != chain.size(); ++i) {
         chain[i].draw(window);
       }
 

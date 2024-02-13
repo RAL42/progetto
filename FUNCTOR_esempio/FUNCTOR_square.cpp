@@ -4,21 +4,20 @@
 
 int main() {
   const float t_max{10};
-  const float dt{0.1};
+  const float dt{0.5};
   auto n{t_max / dt};
 
-  std::cout << n << "\n";
+  std::cout << "numero di punti: " << n << "\n";
 
   std::vector<float> vec_x;
   square x;
 
-  float i;
+  float i{};
   while (i <= n) {
-    x(i);
-    vec_x.push_back(x(i));
-    std::cout << "(" << i << ", " << x(i) << ") \n";
+    double y = x(i);
+    vec_x.push_back(y);
+    std::cout << "(" << i << ", " << y << ") \n";
 
     i += dt;
   };
-
 }

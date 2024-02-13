@@ -5,28 +5,18 @@
 
 #include "hooke.hpp"
 #include "pm.hpp"
-
 //--------------------- FREE FUNCTION ---------------------
 
-const float pi = M_PI;
-// uso un alias
-extern float w;
-// velocita angolare
-extern std::vector<float> Kinetic_energies;
-// vettore composto dalle energie cinetiche di tutti i punti materiali
-extern std::vector<float> Potential_energies;
-// vettore composto dalle energie potenziali di tutti i punti materiali
-
-float d(PM, PM);
+double d(PM const &, PM const &);
 // distanza tra due PM
 
-vec x(PM, PM);
+vec x(PM const &, PM const &);
 // vettore che collega i due PM
 
 vec apply_hooke(PM const &, PM const &, Hooke &);
 // calcola la forza elastica
 
-vec apply_CF(PM const &, float const &);
+vec apply_CF(PM const &, double const &);
 // calcola la forza centrifuga
 
 //--------------------- CHAIN CLASS ---------------------
@@ -37,17 +27,20 @@ class Chain {
   std::vector<PM> ch_;
   // vettore contenente i punti materiali
 
-  PM solve(PM, vec, double const &) const;
+  PM solve(PM, vec, double const) const;
   // risolve le equazioni del moto e aggiorna la posizione e velocità del punto
   // materiale
 
  public:
-  Chain(Hooke const &hooke) : hooke_(hooke){};
+  Chain(Hooke const &, double const, double const, int const);
   // parametrized constructor
-  Chain() = default;
-  // default constructor
 
-  std::size_t size() const;
+  double kin_energy() const;
+  // restituisce l'energia cinetica totale della corda
+  double pot_energy() const;
+  // restituisce l'energia potenziale totale della corda
+
+  size_t size() const;
   // restituisce il numero di elementi della chain
 
   void push_back(PM const &);
@@ -59,10 +52,7 @@ class Chain {
   PM operator[](int);
   // per selezionare l'elemento i-esimo della chain
 
-  void initial_config(float const &, float const &, float const &, int const &);
-  // costruisce la chain nella configurazione iniziale (circonferenza)
-
-  void evolve(double const &);
+  void evolve(double const, double const);
   // calcola le varie forze per ogni punto della chain e aggiorna le posizione
   // chiamando la funzione evolve
 };
